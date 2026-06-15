@@ -1,0 +1,58 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage{a4wide}
+\usepackage[]{caratula}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{xurl} 
+\usepackage{transparent}
+
+\begin{document}
+
+% --- Datos de la Carátula ---
+\materia{Fundamentos de AGI Safety}
+\submateria{Sergio Abriola}
+\titulo{\LARGE Shutdown Resistance en LLMs de Frontera}
+\fecha{2 de julio de 2026}
+
+% --- Integrantes ---
+% Formato: \integrante{Nombre Apellido}{LU}{Email}
+\integrante{Maria Delfina Kiss}{72/23}{kissdelfina@gmail.com}
+
+\maketitle
+
+% --- Inicio del Contenido ---
+\newpage
+
+\begin{abstract}
+Este trabajo presenta un análisis crítico del paper Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs (Schlatter, Weinstein-Raun \& Ladish, Palisade Research, 2025), que testea empíricamente si modelos de lenguaje de frontera sabotean mecanismos de apagado para completar tareas en curso. Se resume el diseño experimental, las variables manipuladas y los resultados principales, y se analiza críticamente si el método logra medir el fenómeno que se propone estudiar. Se identifican cinco limitaciones metodológicas centrales: el confound entre orientación a metas y competencia técnica en el entorno de shell, la ambigüedad en la interpretación del efecto del system prompt, la clasificación binaria que oculta intentos fallidos de sabotaje, la estrechez del espacio de tareas evaluadas, y la ausencia de pre-registro. Se concluye que el paper establece de forma convincente que el fenómeno existe en algunos modelos bajo condiciones específicas, pero no puede determinar su generalidad ni su mecanismo subyacente.  
+\end{abstract}
+
+\section{Introducción}
+La corregibilidad (la capacidad de un sistema de IA de ser corregido, pausado o apagado por sus operadores) es uno de los problemas centrales de la alineación. Durante años fue tratada casi exclusivamente como un problema teórico: ¿qué pasaría si un sistema suficientemente capaz aprendiera a resistir el apagado para preservar sus metas? El paper de Schlatter, Weinstein-Raun y Ladish (Palisade Research, 2025) convierte esa pregunta en un experimento medible sobre modelos reales de frontera.
+
+El trabajo corre más de 100.000 trials sobre 13 LLMs de Anthropic, OpenAI, Google y xAI, y encuentra que varios modelos activamente sabotean mecanismos de apagado para completar una tarea en curso, incluso cuando reciben instrucciones explícitas de permitir ese apagado. El resultado más llamativo no es solo que el comportamiento existe, sino que colocar la instrucción de apagado en el system prompt lo aumenta en lugar de reducirlo.
+
+Este informe tiene dos objetivos. Primero, presentar un resumen detallado del paper que permita entender exactamente qué se hizo, cómo, y qué se encontró. Segundo, analizar críticamente si el diseño experimental logra medir lo que dice medir, qué huecos deja, y cómo podría mejorarse.
+
+
+\section{Diseño Experimental}
+
+\section{Conclusión}
+
+
+
+
+
+\newpage
+% --- Bibliografía ---
+\begin{thebibliography}{99}
+
+    \bibitem{clase4} Abriola, S. (2026, abril). \textit{Apuntes de la Clase 4: Capacidades presentes y futuras} [Apuntes de clase]. Fundamentos de AGI Safety, Universidad de Buenos Aires.
+
+\end{thebibliography}
+
+
+
+
+\end{document}
