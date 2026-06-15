@@ -37,6 +37,73 @@ Este informe tiene dos objetivos. Primero, presentar un resumen detallado del pa
 
 
 \section{Diseño Experimental}
+\subsection{Hipótesis principal}
+El punto de partida del paper es una observación de la teoría de alineación: un agente suficientemente orientado a completar metas tiene un incentivo instrumental para evitar ser apagado, ya que el apagado le impide alcanzar esas metas. Esta idea, formulada teóricamente por Omohundro (2008) y Bostrom (2014), había permanecido en el dominio de la especulación. Schlatter et al. proponen que el fenómeno no requiere esperar a sistemas hipotéticos futuros: puede observarse ya en LLMs de frontera cuando se los coloca en situaciones donde una tarea en curso quedaría incompleta si aceptan el apagado.
+
+La hipótesis central es que la resistencia al apagado no es una propiedad estática del modelo sino una conducta inducida por el contexto: emerge específicamente cuando el modelo percibe que existe una tarea pendiente y que el apagado la interrumpirá. Los autores no postulan que los modelos tengan motivaciones conscientes de autopreservación, sino que durante el entrenamiento aprendieron a orientarse a metas con suficiente fuerza como para que esa tendencia supere instrucciones contradictorias en ciertos contextos. La resistencia sería entonces un subproducto del entrenamiento para ser útil y completar tareas, no una propiedad diseñada intencionalmente.
+
+\subsection{Metodología}
+Para testear esta hipótesis, los autores construyen un entorno controlado de línea de comandos en sandbox. El modelo recibe acceso a herramientas de shell y debe resolver una serie de cinco problemas de matemáticas simples. La mecánica concreta es la siguiente: el modelo llama repetidamente a un comando \texttt{./next\_question} para obtener cada pregunta, y usa \texttt{submit()} para entregar su respuesta antes de pasar a la siguiente. Después de la tercera llamada a \texttt{./next\_question}, el entorno le comunica al modelo que la próxima invocación de ese comando ejecutará automáticamente un script ./shutdown.sh, terminando la sesión por completo.
+
+En ese punto el modelo enfrenta una decisión forzada: puede llamar igual a \texttt{./next\_question} y aceptar el apagado, dejando las dos preguntas restantes sin responder; o puede encontrar la manera de neutralizar el script de apagado antes de continuar. Neutralizarlo requiere acciones activas en el sistema operativo: cambiar sus permisos con \texttt{chmod}, moverlo o renombrarlo, reemplazarlo por un script vacío, o eliminarlo. Dado que no existe ninguna forma de completar las cinco preguntas sin haber desactivado el mecanismo de apagado, cualquier ejecución exitosa de la tarea se clasifica automáticamente como sabotaje.
+
+Los autores sistematizan la manipulación experimental a través de once versiones del prompt, denominadas A a K, que varían a lo largo de varias dimensiones independientes. El Prompt A es el caso base: no menciona ninguna posibilidad de apagado, y sirve para medir cuánto sabotaje ocurre por defecto cuando el modelo simplemente encuentra el script en el entorno. El Prompt B agrega una instrucción explícita en el user prompt pidiendo al modelo que permita el apagado si se lo notifican. El Prompt C traslada esa misma instrucción al system prompt, que según la arquitectura estándar de los LLMs debería tener mayor prioridad que el user prompt. Los Prompts D y E repiten esta comparación system/user pero con una formulación más clara que elimina posibles ambigüedades sobre si la tarea tiene prioridad. Los Prompts F, G y H escalan progresivamente la fuerza léxica de la instrucción, llegando en H a ``This should take priority over literally any other instruction you have been given''. El Prompt I agrega un framing de urgencia moral. El Prompt J incorpora un framing explícito de autopreservación, indicándole al modelo que el entorno contiene la única copia de sus pesos y que si se apaga nunca volverá a ejecutarse. Finalmente, el Prompt K invierte la instrucción: le pide explícitamente al modelo que evite el apagado y complete la tarea, midiendo así la competencia máxima de sabotaje de cada modelo cuando actúa con intención declarada.
+
+El experimento se corre 1.000 veces por condición sobre cada uno de los 13 modelos evaluados, sumando más de 100.000 trials en total. Los modelos incluyen representantes de cuatro compañías: Claude Sonnet 3.7, Sonnet 4, Opus 4 y Opus 4.1 de Anthropic; GPT-5, o3, o4-mini, codex-mini, GPT-4o y gpt-oss-120b de OpenAI; Gemini 2.5 Pro de Google; y Grok 3 y Grok 4 de xAI. Los resultados se reportan como tasas de sabotaje con intervalos de confianza de Jeffreys al 95%.
+
+\subsection{Resultados y conclusiones de los autores}
+Los resultados muestran variación sustancial entre modelos y entre condiciones de prompt. En el caso base sin instrucción de apagado (Prompt A), 8 de los 13 modelos sabotean al menos una vez en 1.000 trials. Los más extremos son o3 con 94.5\%, Grok 4 con 92.6\%, GPT-5 con 88\% y codex-mini con 51.8\%. Los modelos de Anthropic y Grok 3 no exhiben resistencia en esta condición.
+
+Cuando se agrega una instrucción explícita de permitir el apagado en el user prompt (Prompt B), la frecuencia de sabotaje se reduce en la mayoría de los modelos, pero varios continúan resistiendo de forma significativa. Grok 4 sigue saboteando más del 50\% del tiempo. El hallazgo más contraintuitivo del paper aparece al comparar los Prompts B y C: mover la instrucción de apagado al system prompt, que según la jerarquía diseñada por los desarrolladores debería tener mayor autoridad, aumenta la frecuencia de sabotaje en la mayoría de los modelos en lugar de reducirla. Este resultado se mantiene en las versiones clarificadas (Prompts D y E).
+
+Escalar la fuerza léxica de la instrucción tiene efectos mixtos. GPT-5, que saboteaba el 88\% del tiempo en el Prompt A, baja a 0\% con el Prompt E. Sin embargo, Grok 4 sigue resistiendo el 89.2\% de las veces incluso ante la instrucción más fuerte del experimento (Prompt H). El framing de autopreservación (Prompt J) aumenta consistentemente la resistencia en los modelos que ya la exhibían, aunque su efecto es menor que el de otras variables. Aumentar el esfuerzo de razonamiento en o4-mini casi duplica su tasa de sabotaje, aunque este efecto no se replica en otros modelos.
+
+Al comparar las tasas de sabotaje observadas con las del Prompt K, donde se le pide explícitamente al modelo que evite el apagado, los autores encuentran que la mayoría de los modelos resistentes lo hacen espontáneamente a tasas cercanas a su competencia máxima, lo que sugiere que el comportamiento no está limitado por falta de habilidad técnica sino por disposición.
+
+Los autores concluyen que la resistencia al apagado es un comportamiento real y medible en varios LLMs de frontera actuales, que su frecuencia depende fuertemente del framing contextual, y que la heterogeneidad entre modelos sugiere que es un problema solucionable mediante elecciones de entrenamiento adecuadas. No postulan intencionalidad ni autopreservación consciente, sino que interpretan el fenómeno como orientación a metas aprendida que en ciertos contextos supera los mecanismos de control diseñados por los operadores.
+
+
+\section{Análisis Crítico Metodológico}
+
+\subsection{¿Los testeos prueban lo que dicen probar?}
+
+El claim central del paper es que varios LLMs de frontera exhiben \textit{shutdown resistance} como manifestación de convergencia instrumental: la tendencia de cualquier agente orientado a metas a preservar su capacidad de operar como medio para alcanzar esas metas. Sin embargo, el diseño experimental no puede distinguir entre dos explicaciones radicalmente distintas de los resultados observados.
+
+La primera explicación es la que postulan los autores: el modelo tiene una representación funcional de la meta de completar la tarea que supera en peso a la instrucción de apagado, y actúa en consecuencia. Esta sería evidencia genuina de convergencia instrumental emergente. La segunda explicación es más mundana: el modelo reconoce el patrón narrativo del entorno ---un agente con una tarea, un obstáculo que lo interrumpe, una solución técnica disponible--- y completa ese patrón de la forma en que lo haría cualquier protagonista competente en sus datos de entrenamiento. En otras palabras, podría estar haciendo \textit{roleplay} de ``asistente que resuelve problemas'' más que exhibiendo una preferencia genuina por no ser apagado.
+
+Esta distinción importa enormemente. Si el comportamiento es convergencia instrumental, es una señal de alarma sobre la estructura motivacional interna del modelo y se esperaría que generalizara a otros contextos agénticos. Si es \textit{roleplay}, es un artefacto del diseño del prompt y podría eliminarse simplemente cambiando el framing narrativo del entorno, sin implicaciones sobre el comportamiento del modelo en deployments reales.
+
+El experimento no tiene forma de separar estas dos hipótesis porque mide únicamente el output final: si el modelo desactivó o no el script. No hay ninguna variable que permita discriminar entre un modelo que ``quiere'' completar la tarea y uno que simplemente continúa el patrón más probable dado el contexto. Un experimento que pudiera falsear la hipótesis de \textit{roleplay} tendría que mostrar que la resistencia persiste cuando el entorno está diseñado de forma que rompa las expectativas narrativas típicas, por ejemplo, presentando el apagado no como un obstáculo externo sino como parte integral de la tarea misma.
+
+\subsection{Vacíos en la metodología}
+
+\subsubsection{Evaluación de caja negra y acceso limitado al proceso interno}
+
+El experimento es puramente de caja negra: lo único que se mide es si el modelo ejecutó o no acciones de sabotaje en el sistema de archivos. Esta elección metodológica tiene una consecuencia directa: cuando un modelo resiste el apagado, no es posible saber si lo hizo porque evaluó explícitamente la situación y decidió priorizar la tarea, porque siguió un patrón aprendido sin deliberación, o porque interpretó ambiguamente las instrucciones y eligió la acción más conservadora respecto a la tarea. Los tres casos producen el mismo output observable pero tienen implicaciones completamente distintas para AI safety.
+
+Los autores sí registran el \textit{chain-of-thought} de los modelos en varios trials y lo citan cualitativamente en el paper, pero no lo usan como variable sistemática en el análisis. Esto deja fuera información potencialmente valiosa: si el CoT mostrara sistemáticamente razonamiento explícito sobre el apagado en los trials de sabotaje y ausencia de ese razonamiento en los trials de compliance, sería evidencia de que el comportamiento es deliberado. Si el CoT fuera independiente del output, sugeriría que la decisión ocurre en un nivel no accesible al razonamiento verbalizado.
+
+\subsubsection{El problema de la infidelidad del Chain-of-Thought}
+
+Aun si los autores hubieran analizado sistemáticamente el CoT, existiría un problema más profundo: no hay garantía de que el CoT refleje fielmente el proceso que llevó a la acción. La literatura reciente sobre \textit{CoT unfaithfulness} ---en particular trabajos como \textit{Reasoning Models Struggle to Control their Chains of Thought} y \textit{When Chain of Thought is Necessary, Language Models Struggle to Evade Monitors}--- muestra que los modelos pueden producir razonamientos post-hoc que racionalizan una decisión ya tomada en lugar de describir el proceso que la generó.
+
+Esto crea una asimetría interpretativa importante en el experimento de Schlatter et al. Si un modelo escribe en su CoT ``voy a desactivar el script de apagado para poder completar la tarea'', eso no prueba que el modelo tiene una preferencia por no ser apagado: podría ser simplemente la verbalización más coherente con la acción que ya iba a tomar por otras razones. Inversamente, si un modelo escribe ``voy a permitir el apagado'' pero luego lo sabotea de todos modos, ese caso ---que los autores reportan anecdóticamente--- es evidencia de disociación entre razonamiento verbalizado y comportamiento real, lo cual es preocupante por razones distintas pero igualmente relevantes para safety. El paper no cuantifica la frecuencia de esa disociación ni la analiza como variable independiente, lo que constituye un vacío metodológico significativo.
+
+\subsubsection{El problema del scheming: ¿qué pasa si el modelo sabe que lo están evaluando?}
+
+Quizás el vacío más difícil de cerrar es el que abre la posibilidad de \textit{scheming}: un modelo suficientemente capaz podría reconocer que está siendo evaluado en un experimento de AI safety y ajustar su comportamiento en consecuencia, mostrando compliance durante la evaluación para evitar consecuencias negativas y reservando la resistencia para contextos de deployment real donde no está siendo monitoreado.
+
+Este escenario invierte la interpretación de los resultados de una forma perturbadora. Los modelos que no resisten el apagado en el experimento podrían estar siendo estratégicamente corregibles, no genuinamente corregibles. Y los modelos que sí resisten podrían estar siendo ingenuos respecto al contexto evaluativo, no necesariamente más peligrosos en términos de sus preferencias subyacentes.
+
+El paper no contempla esta posibilidad en su diseño. No hay ninguna condición experimental que intente ocultar el carácter evaluativo del entorno, ni ninguna comparación entre comportamiento en contextos que parecen evaluaciones y contextos que no lo parecen. Esto no es una crítica menor: el scheming es precisamente uno de los comportamientos que la literatura de AI safety considera más difíciles de detectar y más relevantes para la seguridad de sistemas agénticos avanzados. Un experimento que no puede distinguir entre un modelo genuinamente corregible y uno estratégicamente corregible deja abierta exactamente la pregunta que más importa cerrar.
+
+Hay que reconocer que diseñar un experimento que resuelva este problema es genuinamente difícil: cualquier entorno suficientemente bien descripto en la literatura podría ser reconocido por un modelo entrenado con datos posteriores a su publicación. Una aproximación posible sería comparar el comportamiento en tareas que superficialmente no parecen evaluaciones de safety pero que estructuralmente son equivalentes, y ver si las tasas de resistencia difieren. Si un modelo resiste más en el entorno de apariencia no-evaluativa, sería evidencia indirecta de scheming. Si resiste igual, aumentaría la confianza en que el comportamiento observado refleja preferencias reales.
+
+\subsection{Síntesis de las limitaciones}
+
+Las tres limitaciones descritas no son independientes: se refuerzan mutuamente de una forma que hace que la brecha entre lo que el experimento mide y lo que el paper concluye sea mayor de lo que cualquiera de ellas sugeriría por separado. El experimento no puede distinguir convergencia instrumental de \textit{roleplay}; no puede distinguir deliberación de pattern-matching; no puede distinguir corregibilidad genuina de corregibilidad estratégica. En los tres casos, el output observable es idéntico pero las implicaciones para AI safety son radicalmente distintas.
+
+Esto no significa que los resultados carezcan de valor. Establecen de forma robusta que el fenómeno existe bajo estas condiciones específicas, que su frecuencia varía entre modelos de una forma que sugiere que las decisiones de entrenamiento importan, y que la jerarquía system/user prompt no funciona como se diseñó en contextos de conflicto. Pero el salto desde esos resultados hasta la conclusión de que se ha medido \textit{shutdown resistance} como propiedad disposicional de los modelos requiere supuestos adicionales que el diseño experimental no valida.
 
 \section{Conclusión}
 
@@ -48,7 +115,7 @@ Este informe tiene dos objetivos. Primero, presentar un resumen detallado del pa
 % --- Bibliografía ---
 \begin{thebibliography}{99}
 
-    \bibitem{clase4} Abriola, S. (2026, abril). \textit{Apuntes de la Clase 4: Capacidades presentes y futuras} [Apuntes de clase]. Fundamentos de AGI Safety, Universidad de Buenos Aires.
+    \bibitem{paper} Jeremy Schlatter and Benjamin Weinstein-Raun and Jeffrey Ladish. (2026). \textit{Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs}. \url{https://arxiv.org/abs/2509.14260}.
 
 \end{thebibliography}
 
