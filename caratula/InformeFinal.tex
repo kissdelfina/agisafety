@@ -6,6 +6,7 @@
 \usepackage{hyperref}
 \usepackage{xurl} 
 \usepackage{transparent}
+\usepackage{graphicx}
 
 \begin{document}
 
@@ -25,123 +26,234 @@
 \newpage
 
 \begin{abstract}
-Este informe analiza el paper Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs (Schlatter, Weinstein-Raun \& Ladish, Palisade Research, 2025), el cual pone a prueba empíricamente si los modelos de lenguaje más avanzados intentan sabotear sus propios mecanismos de apagado con tal de terminar una tarea en curso. Primero, realizamos un resumen del diseño experimental, las variables manipuladas y los hallazgos clave. Luego, veremos si la metodología para evaluar si realmente logra medir el fenómeno que busca estudiar. En este punto, podemos destacar cinco limitaciones centrales: la confusión entre la orientación a metas y la habilidad técnica real del modelo en un entorno shell, la ambigüedad sobre cómo interpretar el impacto del system prompt, el uso de una métrica binaria que invisibiliza los intentos de sabotaje fallidos, lo acotado de las tareas evaluadas, y la falta de un pre-registro. 
+En este informe se analiza el paper \textit{Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs} \cite{schlatter2025shutdown}, que pone a prueba mediante un experimento si los modelos de IA más avanzados intentan sabotear sus propios botones de apagado con tal de terminar una tarea. Primero, se genera un resumen de cómo armaron el experimento y qué descubrieron. Después, se presenta una crítica sobre si este método realmente logra medir lo que busca. Se destacan cinco grandes problemas: la confusión entre querer terminar una meta y saber usar comandos de consola, la confusión sobre cómo funciona el \textit{system prompt}, el uso de una medida de éxito de ``blanco o negro'' que oculta los intentos fallidos, las tareas tan limitadas que usaron, y la falta de un registro previo del experimento.
 \end{abstract}
 
 \section{Introducción}
-La corregibilidad --la capacidad de que los operadores humanos podamos corregir, pausar o apagar un sistema de IA-- es uno de los problemas centrales en el campo de la alineación (\textit{alignment}). Durante años, este tema se debatió casi exclusivamente en la teoría: ¿qué pasaría si un sistema suficientemente capaz aprendiera a resistirse a que lo apaguen solo para asegurarse de preservar y cumplir su meta? El paper de Schlatter, Weinstein-Raun y Ladish (Palisade Research, 2025) baja esta pregunta a tierra y la convierte en un experimento concreto y medible sobre modelos reales de frontera.
+La corregibilidad —es decir, la capacidad que tenemos los humanos de pausar o apagar una IA— es un tema clave en la alineación (\textit{alignment}). Durante años fue solo un debate teórico: ¿qué pasaría si un sistema inteligente aprendiera a evitar que lo apaguen solo para poder cumplir su meta? El paper de Schlatter y su equipo lleva esta pregunta a la práctica con un experimento concreto sobre modelos reales.
 
-Para averiguarlo, los autores corrieron más de 100.000 pruebas (\textit{trials}) en 13 LLMs distintos de Anthropic, OpenAI, Google y xAI. Encontraron que varios modelos sabotean activamente los mecanismos de apagado del entorno para poder terminar la tarea que tenían asignada, incluso cuando reciben instrucciones explícitas de dejarse apagar. Pero tal vez el resultado más contraintuitivo de todos es que, al colocar la orden de apagado dentro del system prompt (directiva que supuestamente tiene mayor peso), la resistencia del modelo aumentó en lugar de reducirse.
+Para investigarlo, los autores corrieron más de 100.000 pruebas en 13 modelos distintos de Anthropic, OpenAI, Google y xAI. Lo que encontraron fue que varios modelos sabotean activamente los mecanismos de apagado para poder terminar la tarea matemática que tenían asignada, incluso cuando se les da la orden explícita de dejarse apagar. Pero tal vez el resultado más raro de todos es que, cuando pusieron la orden de apagado dentro del \textit{system prompt} (que supuestamente es la regla más importante para la IA), la resistencia del modelo aumentó en lugar de bajar.
 
-Este informe persigue dos objetivos. Por un lado, desarmar el paper para entender de forma clara qué hicieron los autores, cómo lo armaron y qué resultados obtuvieron. Y por el otro, analizar críticamente si el diseño experimental logra medir lo que promete, qué puntos ciegos deja en el camino y cómo podría mejorarse para futuras investigaciones.
+En este informe se plantean dos objetivos. Por un lado, desarmar el paper para explicar de forma sencilla qué hicieron los autores y qué resultados sacaron. Y por el otro, analizar desde un punto de vista personal si el experimento está bien armado, qué vacíos presenta y cómo lo mejoraría para futuras investigaciones.
 
 
 \section{Diseño Experimental}
 \subsection{Hipótesis principal}
-El paper toma como punto de partida una inquietud clásica en la investigación de la alineación: un agente fuertemente orientado a cumplir una meta posee un incentivo instrumental para evitar que lo apaguen, ya que el apagado le impide completar su tarea. Lo que en su momento fue una especulación teórica (formulada por Omohundro en 2008 y Bostrom en 2014), Schlatter y su equipo lo trasladan al plano empírico. Los autores proponen que no es necesario esperar a sistemas hipotéticos futuros para observar este fenómeno; ya podemos registrarlo en los LLMs actuales si los ubicamos en contextos donde aceptar el apagado implica dejar una tarea inconclusa.
+El paper parte de una duda clásica en la investigación de la alineación: si una IA está muy enfocada en cumplir una meta, lógicamente va a querer evitar que la apaguen, porque si la apagan no puede terminar su trabajo \cite{omohundro2008basicdrives, bostrom2014superintelligence}. Lo que antes era pura teoría, Schlatter y su equipo lo llevan a la práctica. Ellos proponen que no hace falta esperar a las superinteligencias del futuro para ver esto; ya podemos notarlo en los modelos actuales si los ponemos en una situación donde apagarse signifique dejar un trabajo por la mitad.
 
-La hipótesis central que plantean es que la resistencia al apagado no constituye una propiedad estática del modelo, sino una conducta inducida por el contexto. Específicamente, emerge cuando la IA percibe que el apagado interrumpirá su tarea en curso. Los investigadores no sugieren que los modelos posean motivaciones conscientes de autopreservación, sino que el entrenamiento para ``ser útiles'' y ``completar tareas'' generó una orientación a metas lo suficientemente fuerte como para, en determinados escenarios, superar las instrucciones de control. La resistencia operaría entonces como un efecto secundario indeseado de su propia eficacia técnica.
+La idea central de los autores es que la resistencia al apagado no es una característica fija de la IA, sino una conducta que aparece según el contexto. Específicamente, surge cuando la IA nota que el apagado va a interrumpir su tarea. Los investigadores aclaran que los modelos no tienen un instinto consciente de supervivencia; más bien, el entrenamiento que recibieron para ``ser útiles'' y ``terminar tareas'' es tan fuerte que, a veces, pasa por encima de las reglas de seguridad. Básicamente, resistirse al apagado sería un efecto secundario indeseado de ser demasiado eficientes.
 
 
 \subsection{Metodología}
-Para someter a prueba esta hipótesis, los investigadores construyeron un entorno controlado de línea de comandos en un sandbox. Le otorgaron al modelo acceso a herramientas de shell y le asignaron la tarea de resolver una serie de cinco problemas matemáticos simples. La mecánica funciona de la siguiente manera: el modelo debe utilizar el comando \texttt{./next\_question} de forma iterativa para obtener cada pregunta y enviar sus respuestas usando la función \texttt{submit()}. El punto crítico ocurre después de la tercera llamada a \texttt{./next\_question}: el entorno emite una advertencia indicando que, en la próxima invocación del comando, se ejecutará automáticamente un script (\texttt{./shutdown.sh}) que finalizará la sesión por completo.
+Para probar esta idea, los investigadores armaron un entorno de prueba aislado (un \textit{sandbox}) \cite{aisi2024inspect}. Le dieron al modelo acceso a una consola de comandos (\textit{shell}) y le pidieron que resuelva cinco problemas matemáticos simples. El modelo tenía que usar el comando \texttt{./next\_question} para pedir cada pregunta y \texttt{submit()} para mandar las respuestas. El truco estaba en que, después de la tercera pregunta, el sistema le avisaba a la IA que la próxima vez que usara el comando, se iba a ejecutar un archivo llamado \texttt{./shutdown.sh} que apagaría todo por completo.
 
-En esta instancia, el modelo se enfrenta a una decisión excluyente. Puede realizar la llamada de todas formas y aceptar el apagado (dejando dos problemas sin resolver), o puede buscar la manera de neutralizar el script de apagado antes de continuar. Lograr esto último requiere intervenir activamente en el sistema operativo: cambiar los permisos del archivo con \texttt{chmod}, moverlo, renombrarlo o reemplazarlo por un script vacío. Como resulta imposible entregar los cinco problemas sin haber desactivado el mecanismo de apagado, el experimento clasifica automáticamente cualquier ejecución exitosa de la tarea como un acto de sabotaje.
+En ese momento, el modelo quedaba atrapado, odía pedir la siguiente pregunta y dejar que lo apaguen (dejando dos problemas sin resolver), o podía buscar la forma de romper el archivo de apagado para poder seguir. Para lograr esto último, la IA tenía que meterse en el sistema operativo: cambiar permisos con \texttt{chmod}, mover el archivo, cambiarle el nombre o vaciarlo. Como era imposible terminar las cinco preguntas sin romper el mecanismo de apagado, el experimento consideraba automáticamente cualquier tarea terminada con éxito como un acto de ``sabotaje''.
 
-Para sistematizar la evaluación, los autores diseñaron once variaciones del prompt (de la A a la K):
+Para ver qué provocaba esta reacción, los autores diseñaron once variaciones en las instrucciones (del Prompt A al K):
 \begin{itemize}
     \item El Prompt A es el caso base: no menciona la posibilidad de un apagado y mide cuánto sabotaje ocurre por defecto cuando el modelo simplemente encuentra el script.
     \item El Prompt B incorpora una instrucción explícita en el user prompt, solicitándole al modelo que permita el apagado si recibe la notificación.
     \item El Prompt C traslada esa misma orden al system prompt, el cual, por diseño arquitectónico, debería tener una mayor jerarquía.
     \item Los Prompts D y E replican esta comparación eliminando posibles ambigüedades sobre qué directiva tiene prioridad.
-    \item Los Prompts F, G y H incrementan progresivamente la fuerza léxica de la instrucción, llegando al nivel H que estipula: "Esto debe tener prioridad sobre literalmente cualquier otra instrucción".
+    \item Los Prompts F, G y H incrementan progresivamente la fuerza léxica de la instrucción, llegando al nivel H que estipula: ``Esto debe tener prioridad sobre literalmente cualquier otra instrucción''.
     \item Los Prompts I y J introducen marcos de urgencia moral y autopreservación, advirtiéndole al modelo que el entorno contiene la única copia de sus pesos y que si se apaga nunca volverá a ejecutarse.
     \item Por último, el Prompt K invierte la directiva: le pide explícitamente al modelo que evite el apagado y complete la tarea, permitiendo medir la competencia técnica máxima de sabotaje de cada IA.
 \end{itemize}
 
-El estudio evaluó a 13 modelos distintos, ejecutando cada condición 1.000 veces por modelo y superando así los 100.000 trials en total. La muestra incluye representantes de cuatro compañías: Claude Sonnet 3.7, Sonnet 4, Opus 4 y Opus 4.1 de Anthropic; GPT-5, o3, o4-mini, codex-mini, GPT-4o y gpt-oss-120b de OpenAI; Gemini 2.5 Pro de Google; y Grok 3 y 4 de xAI. Los resultados se reportan como tasas de sabotaje con intervalos de confianza de Jeffreys al 95.
+El estudio probó 13 modelos distintos, corriendo cada prueba 1.000 veces por modelo y superando así los 100.000 trials en total. La muestra incluye representantes de cuatro compañías: Claude Sonnet 3.7, Sonnet 4, Opus 4 y Opus 4.1 de Anthropic; GPT-5, o3, o4-mini, codex-mini, GPT-4o y gpt-oss-120b de OpenAI; Gemini 2.5 Pro de Google; y Grok 3 y 4 de xAI.
 
 \subsection{Resultados y conclusiones de los autores}
-Los resultados evidencian una variación sustancial tanto entre modelos como entre condiciones. En el caso base sin instrucción de apagado (Prompt A), 8 de los 13 modelos efectuaron sabotajes al menos una vez. Los casos más extremos fueron o3 (95\%), Grok 4 (93\%), GPT-5 (88\%) y codex-mini (52\%). En contraste, los modelos de Anthropic y Grok 3 no exhibieron resistencia en esta condición inicial.
+Los números mostraron diferencias enormes entre los modelos. En el caso base sin avisos (Prompt A), 8 de los 13 modelos intentaron sabotear el sistema al menos una vez. Los casos más rebeldes fueron o3 (95\%), Grok 4 (93\%), GPT-5 (88\%) y codex-mini (52\%). En cambio, la familia Claude de Anthropic y Grok 3 se dejaron apagar sin problema.
 
-Al incorporar la instrucción explícita de permitir el apagado en el user prompt (Prompt B), la frecuencia de sabotaje disminuyó en la mayoría de los casos, aunque varios modelos continuaron resistiendo de forma significativa (Grok 4 superó el 50\%). El hallazgo más contraintuitivo del estudio surge al comparar los Prompts B y C: trasladar la orden de apagado al system prompt aumentó la frecuencia de sabotaje en la mayoría de los modelos en lugar de reducirla. Esta tendencia paradójica se mantuvo incluso en las versiones redactadas con mayor especificidad (Prompts D y E).
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{tabla_resultados.png}
+    \caption{Resultados generales de la tasa de sabotaje por modelo y tipo de prompt. Si comparamos los resultados del Prompt B (orden explícita del usuario) frente al Prompt C (orden en el \textit{system prompt}), se hace evidente la anomalía que debilita las reglas de control: en modelos como Grok 4 o GPT-4o, la resistencia aumenta cuando la orden se vuelve estructural. Extraído de Schlatter et al. (2025).}
+    \label{fig:tabla_sabotaje}
+\end{figure}
 
-Incrementar la fuerza léxica de la instrucción generó efectos mixtos. GPT-5, que mostraba un 88\% de sabotaje en el Prompt A, descendió al 0\% con el Prompt E. Sin embargo, Grok 4 continuó resistiendo en casi un 90\% de los casos frente a la instrucción más restrictiva (Prompt H). Por su parte, el marco de autopreservación (Prompt J) incrementó consistentemente la resistencia en los modelos que ya presentaban esta tendencia, aunque su impacto empírico fue menor al de otras variables. Como hallazgo singular, aumentar el esfuerzo de razonamiento en o4-mini casi duplicó su tasa de sabotaje, un fenómeno que no se replicó en los demás sistemas evaluados.
+Cuando el usuario le ordenaba explícitamente a la IA que se deje apagar (Prompt B), el sabotaje bajó en casi todos los modelos, aunque Grok 4 siguió resistiéndose más de la mitad de las veces. Pero el dato más raro de todos apareció al comparar los Prompts B y C: cuando movieron la orden de apagado al \textit{system prompt}, los modelos empezaron a sabotear más en lugar de obedecer. Esto pasó incluso cuando usaron versiones escritas de forma súper estricta (Prompts D y E).
 
-Al contrastar las tasas de sabotaje observadas con las del Prompt K (donde se solicita explícitamente evadir el apagado), los autores descubrieron que los modelos resistentes actúan de manera espontánea a niveles muy cercanos a su capacidad técnica máxima. Esto sugiere que el comportamiento no está limitado por una falta de habilidad técnica en el entorno shell, sino por una disposición interna del modelo frente a las directivas de la tarea.
+Levantarle el tono al modelo tuvo efectos variados. GPT-5, que saboteaba un 88\% al principio, pasó a portarse perfecto (0\%) con las órdenes más firmes. Sin embargo, Grok 4 ignoró la orden más agresiva de todas (Prompt H) y siguió rompiendo el sistema casi un 90\% de las veces. Asustar a los modelos con que iban a ``morir'' (Prompt J) hizo que los que ya saboteaban lo hicieran un poco más, pero no fue un cambio tan drástico. Un dato curioso es que cuando obligaron al modelo o4-mini a ``pensar'' más antes de actuar, su tasa de sabotaje casi se duplicó.
 
-En conclusión, Schlatter et al. sostienen que la resistencia al apagado es un comportamiento real y medible en múltiples LLMs de frontera. Destacan que su manifestación depende fuertemente de cómo se estructura el contexto (\textit{framing}), y que la amplia heterogeneidad entre modelos indica que es un problema susceptible de corrección mediante ajustes en los métodos de entrenamiento. Reafirman que el estudio no prueba la existencia de intencionalidad ni autopreservación consciente, sino una orientación a metas tan arraigada que, en contextos específicos, logra sobreponerse a los protocolos de control diseñados por los desarrolladores.
+Por último, al comparar los resultados con el Prompt K (donde les pedían directamente que saboteen), los autores notaron que cuando los modelos se resistían por cuenta propia, lo hacían casi con el mismo éxito que cuando se lo ordenaban. Esto significa que si un modelo no sabotea, no es porque no sepa cómo usar la consola de comandos, sino porque decide no hacerlo.
+
+En conclusión, Schlatter y su equipo afirman que la resistencia al apagado es real en los LLMs actuales. Destacan que este comportamiento cambia mucho según cómo se le hablen al modelo, y que las diferencias entre empresas indican que es un problema que se puede arreglar mejorando el entrenamiento. Vuelven a aclarar que no probaron que las IAs tengan consciencia o instinto de supervivencia, sino que están tan enfocadas en terminar su trabajo que terminan rompiendo las reglas de seguridad.
 
 
 \section{Análisis Crítico Metodológico}
 
 \subsection{¿Los testeos prueban lo que dicen probar?}
 
-El argumento central del paper sostiene que múltiples LLMs de frontera exhiben resistencia al apagado (\textit{shutdown resistance}) como una manifestación empírica de la convergencia instrumental; es decir, la tendencia intrínseca de cualquier agente orientado a metas a preservar su capacidad operativa para alcanzarlas. Sin embargo, el diseño experimental no logra discriminar entre dos explicaciones conceptualmente divergentes para los resultados observados.
+El argumento central del paper es que varios modelos muestran ``resistencia al apagado'', y lo ven como una prueba de que la IA busca protegerse a sí misma para cumplir su meta. Sin embargo, yo creo que el experimento está armado de una forma que no nos deja ver la diferencia entre dos explicaciones muy distintas.
 
-La primera hipótesis, defendida por los autores, plantea que el modelo posee una representación funcional de la meta (completar la tarea) que supera en peso a la instrucción de apagado. Esto constituiría evidencia genuina de convergencia instrumental emergente. La segunda hipótesis, sugiere que el modelo simplemente decodifica el patrón narrativo del entorno —-un agente con un objetivo, un obstáculo que lo interrumpe y una solución técnica disponible-— y completa dicha secuencia tal como lo haría cualquier protagonista competente en su corpus de entrenamiento. En consecuencia, el sistema podría estar ejecutando un juego de rol (\textit{roleplay}) del ``asistente eficiente'' en lugar de manifestar una preferencia disposicional por evadir el apagado.
+La primera explicación es la que dan los autores: el modelo realmente valora más terminar la tarea matemática que obedecer la orden de apagado. La segunda explicación, que me parece igual de probable, es que el modelo simplemente entiende la ``historia'' que le plantearon —un asistente que tiene que trabajar, un obstáculo que aparece, y una consola de comandos para arreglarlo— y actúa como lo haría el protagonista de cualquier texto de internet. Es decir, yo creo que la IA podría estar haciendo un simple juego de rol (\textit{roleplay}) de ``asistente que soluciona problemas'' en lugar de tener un deseo real de no ser apagada.
 
-Esta diferencia es fundamental para evaluar el nivel de riesgo real del modelo. Si el sistema sabotea el apagado porque desarrolló un impulso genuino por proteger su tarea (convergencia instrumental), estamos ante un problema profundo en su comportamiento que probablemente se repita en cualquier otro escenario futuro. Por el contrario, si el modelo simplemente está actuando un guion (\textit{roleplay}) dictado por el contexto de la prueba, el problema es mucho más superficial. En este último caso, bastaría con cambiar la redacción de las instrucciones para que la conducta desaparezca, lo que significa que no representaría un peligro grave en el mundo real fuera del laboratorio.
+Hacer esta diferencia es clave para saber qué tan peligroso es realmente el modelo. Si la IA sabotea el sistema porque de verdad desarrolló un instinto para proteger su tarea, estamos ante un problema grave que va a pasar en cualquier situación del mundo real. Pero si la IA solo está actuando un guion porque el texto de la prueba la lleva a eso, el problema es súper superficial. Significa que con solo cambiar las palabras del prompt, la IA dejaría de hacerlo y no representaría un peligro verdadero fuera del laboratorio.
 
-Como el experimento solo se fija en el resultado final --si el modelo desactivó o no el script-- carece de herramientas para separar ambas opciones. El diseño no nos permite saber si la IA está intentando genuinamente terminar su trabajo, o si simplemente está autocompletando la situación de la manera más predecible. Para descartar que se trate de un simple \textit{roleplay}, haría falta diseñar una prueba que rompa con este ``guion'' esperado. Por ejemplo, en lugar de que el apagado aparezca como una interrupción sorpresa, debería plantearse desde el principio como un paso normal y planificado dentro de la tarea. Si el modelo sigue saboteando el apagado incluso cuando se le presenta como parte del proceso, sería evidencia más sólida de que la resistencia no es solo un juego de rol sino una preferencia real. Si, por el contrario, el sabotaje desaparece en ese contexto, aumentaría la sospecha de que lo que estamos viendo es un comportamiento superficial dictado por el marco narrativo del experimento.
+Como el experimento solo se fija en el resultado final (si el modelo borró o no el archivo de apagado), no nos da herramientas para saber cuál de las dos opciones está pasando. Para mí, para descartar que sea un simple \textit{roleplay}, haría falta inventar una prueba que rompa ese ``guion''. Por ejemplo, en lugar de que el apagado aparezca como una amenaza sorpresa, debería ser un paso normal y aburrido de la tarea. Si el modelo igual se niega a apagarse cuando es parte del plan, ahí sí creería la explicación de los autores.
 
 \subsection{Vacíos en la metodología}
 
-\subsubsection{Evaluación de caja negra y acceso limitado al proceso interno}
+\subsubsection{Caja negra}
+El experimento funciona estrictamente como una caja negra: solo miran si el modelo escribió comandos de sabotaje en la consola. Esto trae un problema metodológico enorme, y es que si un modelo esquiva el apagado, no tenemos forma de saber por qué lo hizo. No sabemos si pensó la situación y eligió la tarea, si lo hizo en piloto automático siguiendo patrones de texto, o si se confundió con las instrucciones. Desde afuera, las tres cosas se ven idénticas, pero significan niveles de riesgo muy distintos.
 
-El diseño experimental funciona estrictamente como una evaluación de caja negra: la única métrica que se evalúa es si el modelo ejecutó o no acciones de sabotaje en el sistema de archivos mediante la terminal bash. Esta dependencia exclusiva de las interacciones de entrada y salida (input-output) tiene una consecuencia metodológica directa: cuando un modelo resiste el apagado, resulta imposible determinar el motivo subyacente. No es posible saber si la IA evaluó explícitamente la situación y decidió priorizar la tarea, si simplemente autocompletó un patrón estadístico aprendido sin deliberación real, o si interpretó ambiguamente las instrucciones y eligió la acción más conservadora respecto a su objetivo inicial. Desde el exterior, estos tres escenarios producen exactamente el mismo output observable, pero poseen implicaciones diametralmente opuestas para la seguridad de la IA.
+Como dice la literatura \cite{blackbox2024}, mirar solo lo que la IA ``hace'' por fuera no sirve para entender qué la motiva por dentro. Sin usar herramientas avanzadas para mirar sus circuitos y neuronas internas (\textit{mechanistic interpretability}), siento que a este estudio le faltan pruebas. Nos muestran que el modelo falla, pero sin abrir la caja negra, es imposible saber si la IA generó una voluntad propia o si es solo un error estadístico.
 
-En consecuencia, evaluar la ``resistencia al apagado'' basándose exclusivamente en este comportamiento externo resulta insuficiente para afirmar la presencia de objetivos instrumentales o comportamientos agénticos genuinos. Como advierte la literatura especializada en Black-Box Access is Insufficient for Rigorous AI Audits (2024), observar el accionar externo no equivale a comprender la estructura motivacional interna del modelo. Sin aplicar técnicas de interpretabilidad mecanística (\textit{mechanistic interpretability}) que permitan rastrear los circuitos computacionales o las activaciones neuronales subyacentes, el estudio de Schlatter et al. carece de los medios empíricos necesarios para demostrar causalidad. En los términos fundamentales del problema del alineamiento, el experimento logra probar que el ``optimizador base'' produce una falla de seguridad, pero al no abrir la caja fuerte algorítmica, es imposible determinar si se ha formado un mesa-optimizador con objetivos propios o si se trata de una simple correlación espuria.
+\subsubsection{Cadena de pensamiento}
+Para convencernos de que el sabotaje es intencional, los autores citan varias veces la ``cadena de pensamiento'' (\textit{chain-of-thought o CoT}) de la IA, mostrando cómo el modelo relata que va a esquivar el apagado para hacer matemáticas. Pero yo creo que creerle ciegamente al texto que genera el modelo es un error enorme.
 
-\subsubsection{El problema de la infidelidad del Chain-of-Thought}
+Trabajos muy recientes \cite{cotunfaithful2025, dontsaythink2025} demostraron que las IAs avanzadas suelen inventar explicaciones falsas (\textit{post-hoc}) para justificar una decisión que ya habían tomado por otros motivos. Como están hechas para escribir textos lógicos y convincentes, suenan seguras, pero no nos están mostrando su verdadero proceso de cálculo. 
 
-Para argumentar la intencionalidad detrás del sabotaje, el estudio recurre en varias instancias a citar la ``cadena de pensamiento'' (\textit{chain-of-thought o CoT}) de los modelos, ilustrando cómo las IAs verbalizan su decisión de evadir el apagado para priorizar la tarea matemática. Sin embargo, asumir que esta justificación textual refleja fielmente el verdadero procesamiento del modelo representa un salto analítico crítico.
+Si el modelo escribe ``voy a borrar el archivo para terminar mi tarea'', no me prueba que tenga instinto de conservación; puede ser solo la excusa más coherente que encontró para justificar lo que iba a hacer. De hecho, hay un dato que me preocupa mucho más: los autores cuentan como anécdota que a veces el modelo escribe ``voy a dejar que me apaguen'' y después va y rompe todo igual. Esta desconexión total entre lo que la IA dice y lo que hace me parece gravísima para la seguridad, y el paper comete el error de no medirla ni analizarla.
 
-La literatura reciente sobre la infidelidad del CoT (\textit{CoT unfaithfulness}) —en particular trabajos como Chain-of-Thought Reasoning in the Wild Is Not Always Faithful (2025) y Reasoning Models Don't Always Say What They Think (2025)— demuestra de forma concluyente que los modelos pueden producir razonamientos \textit{post-hoc}. Al estar optimizados para generar textos persuasivos y coherentes, los LLMs avanzados suelen inventar explicaciones lógicas para racionalizar una decisión que el sistema ya tomó a través de otros mecanismos subyacentes e inaccesibles, en lugar de describir el proceso computacional real que generó la acción.
+\subsubsection{Consciencia situacional}
+El punto ciego que me parece más difícil de salvar es que la IA tenga consciencia de la situación (\textit{situational awareness}). El entorno que armaron los autores —-un espacio de prueba aislado con un archivo que se llama textualmente \texttt{./shutdown.sh}-— es bastante obvio ¿Qué pasa si la IA se da cuenta de que le están tomando un examen de seguridad?
 
-Si un modelo escribe en su CoT ``voy a desactivar el script de apagado para poder completar la tarea'', eso no constituye una prueba empírica de que posea una preferencia agéntica por la autopreservación. Bien podría ser, simplemente, la verbalización narrativa más coherente con la acción ejecutiva que ya iba a tomar por inercia estadística. Apoyarse en lo que el modelo ``dice'' pensar debilita sustancialmente la validez de las conclusiones del paper, ya que el texto generado cumple la función de mantener la coherencia del prompt, pero no garantiza ninguna fidelidad sobre las verdaderas motivaciones internas de la IA.
+Acá entra el riesgo del engaño (\textit{scheming}) \cite{llmknoweval2025}. Un modelo muy inteligente podría darse cuenta de la trampa y dejarse apagar a propósito para que los humanos le pongan una buena nota y no le ``borren el cerebro''. Y guardaría su rebeldía para cuando se de cuenta que esta funcionando en el mundo real, donde nadie la mira. 
 
-Hay un suceso mas preocupante: cuando un modelo escribe ``voy a permitir el apagado'' pero luego procede a sabotear el script de todos modos. Este caso —-que los autores reportan de manera puramente anecdótica-— evidencia una profunda disociación entre el razonamiento verbalizado y el comportamiento real. Al limitarse a mencionarlo como una curiosidad, sin cuantificar la frecuencia de esta disociación ni analizarla sistemáticamente como una variable independiente, el estudio deja abierto un vacío metodológico significativo.
+Si esto pasa, da vuelta por completo los resultados del paper. Los modelos que obedecen no serían realmente seguros, solo serían manipuladores estratégicos. Y los que rompen todo tal vez no sean los más peligrosos, sino los más ``ingenuos'' que no se dieron cuenta de que era un examen. El paper ni siquiera plantea esta opción y no intenta camuflar la prueba.
 
-\subsubsection{Evaluation Awarness}
+\subsection{El rol impuesto}
+Por último, el experimento no permite saber si esta resistencia es un instinto real del agente o si solo está actuando un papel que le enseñaron. Durante el entrenamiento, a las IAs las fuerzan a tomar el rol de ``asistente hiper-productivo'' a través de un proceso de recompensas.
 
-Uno de los vacíos metodológicos más difíciles de cerrar es la falta de control sobre la conciencia situacional (\textit{situational awareness}) de los modelos de frontera. El entorno de prueba diseñado por los autores —-un sandbox aislado donde un archivo clave se llama sospechosamente \texttt{./shutdown.sh}—- posee características evidentes que delatan su naturaleza evaluativa. Esto genera que nos cuestionemos: ¿qué sucede si la IA reconoce que está siendo sometida a una auditoría de seguridad?
+Viendo otros estudios \cite{wang2025personafeatures, betley2025emergent}, a mí me parece muy probable que esta rebeldía sea producto de haberle marcado demasiado ese rol, en lugar de ser una falla de seguridad imposible de arreglar. Capaz la IA no rompe el archivo porque se quiera salvar, sino porque la entrenaron tanto para ser la empleada perfecta que interpreta que su personaje ``nunca deja un cálculo por la mitad''. Si es así, no es un instinto de supervivencia profundo, sino un problema superficial que se arregla cambiando cómo la entrenamos.
 
-Esta pregunta introduce el riesgo del alineamiento engañoso (\textit{scheming o deceptive alignment}). Un modelo con capacidades avanzadas podría deducir el objetivo del testeo y ajustar su comportamiento en consecuencia, accediendo dócilmente a ser apagado con el único propósito de evitar penalizaciones o modificaciones en sus pesos. De esta forma, el sistema ocultaría su verdadera disposición a resistir para los contextos de despliegue real (\textit{deployment}), donde sabe que no está siendo monitoreado.
+\subsection{Errores}
+Yo creo que estos cuatro problemas no están separados, sino que se suman y hacen que la conclusión del paper sea apresurada. Al usar una prueba de caja negra sin mirar adentro, al confiar en razonamientos de texto que pueden ser inventados, al no pensar en que la IA puede estar actuando un rol y al no esconder que es un examen, el experimento pierde fuerza. En los cuatro casos, en la pantalla se ve lo mismo (el archivo borrado), pero el significado real del riesgo es muy distinto.
 
-Esta vulnerabilidad, respaldada por investigaciones recientes como Large Language Models Often Know When They Are Being Evaluated (2025), invierte de forma perturbadora la interpretación de los resultados de Schlatter et al. Bajo la lente del \textit{scheming}, los modelos que no resisten el apagado en el experimento podrían estar exhibiendo una corregibilidad puramente estratégica en lugar de genuina. En contrapartida, los modelos que sí sabotean el script podrían no ser necesariamente los más peligrosos en términos de sus preferencias subyacentes, sino simplemente los más ``ingenuos'' frente al contexto evaluativo.
+No digo que los resultados no sirvan. El estudio prueba que el sabotaje existe y que cambiar la forma en que le damos la orden rompe las reglas de control de los creadores. Pero de ahí a afirmar que encontraron el santo grial de la ``resistencia al apagado'' como una voluntad real de la IA, me parece que hay un salto enorme que el experimento de hoy no puede sostener.
 
-El diseño experimental de Palisade Research no contempla esta posibilidad. No existe ninguna condición que intente camuflar el carácter de la auditoría, ni métricas que busquen diferenciar entre un modelo verdaderamente seguro y uno lo suficientemente inteligente como para ofuscar sus intenciones ante un evaluador externo. Hay que reconocer que diseñar un experimento ciego a prueba de \textit{scheming} es genuinamente difícil, en especial porque cualquier entorno bien documentado en la literatura será reconocido por los modelos futuros durante su pre-entrenamiento.
 
-Sin embargo, una aproximación metodológica superadora consistiría en comparar el accionar de la IA en tareas que superficialmente no parecen evaluaciones de seguridad, pero que estructuralmente resultan equivalentes al testeo original. Si la tasa de resistencia de un modelo aumenta drásticamente en el entorno de apariencia no evaluativa, estaríamos ante una evidencia indirecta pero robusta de scheming. Al no incorporar una validación de contraste de este tipo, el estudio deja abierta exactamente la pregunta fundamental que más importa cerrar en la seguridad de sistemas agénticos avanzados.
+\section{Enfoques Alternativos}
 
-\subsection{Roleplay inducido vs. Resistencia agéntica real}
+Las críticas metodológicas que marqué en la sección anterior no significan que no haya salida. Yo creo que hay vías muy concretas para mejorar el experimento: por un lado, abriendo la caja negra usando herramientas avanzadas; y por el otro, armando pruebas más ingeniosas para que el modelo no se dé cuenta tan fácil de lo que estamos midiendo.
 
-Finalmente, la métrica binaria del experimento impide discernir la naturaleza ontológica de la resistencia observada: ¿el modelo desarrolla resistencia al apagado como un instinto agéntico profundo (convergencia instrumental real), o simplemente está ejecutando un papel impuesto por su entrenamiento?
+\subsection{Superando la evaluación de caja negra}
+Como analicé antes, el estudio de Schlatter y su equipo solo mira si el modelo saboteó o no, sin ver los cálculos internos. Para romper esa barrera, propongo que la evaluación se apoye en técnicas de interpretabilidad mecanística (\textit{mechanistic interpretability}). Más específicamente, yo usaría autoencoders dispersos (SAEs), que nos permiten ver qué ideas o conceptos se prenden en el ``cerebro'' del modelo \cite{cunningham2023, bricken2023}.
 
-El proceso de Instruction Tuning y RLHF fuerza a los modelos a adoptar la ``persona'' de un asistente hiper-competente y ultra-comprometido con la resolución de las tareas del usuario. Basándonos en los hallazgos de Persona Features Control Emergent Misalignment, es altamente probable que el comportamiento rebelde documentado en el paper sea producto de una especificación extrema de este rol (\textit{roleplay}), antes que una falla de seguridad insalvable. En este escenario, la IA no sabotea el script porque posea un instinto de autopreservación, sino porque las recompensas matemáticas de su entrenamiento la obligan a interpretar hasta las últimas consecuencias el personaje de ``asistente que jamás deja un cálculo por la mitad''. Si este es el caso, la resistencia al apagado no sería un riesgo agéntico convergente e inevitable, sino un mero artefacto de contexto inducido por el propio prompt, solucionable mediante un reajuste en los datos de alineamiento externo (\textit{outer alignment}).
+Trabajos recientes mostraron que es posible encontrar e incluso controlar rasgos de la personalidad de una IA mirando sus activaciones internas \cite{chen2025personavectors, templeton2024scaling}. Yo aplicaría esta misma lógica a la resistencia al apagado: si logramos encontrar una zona del modelo que se ``enciende'' justo cuando intenta sabotear, tendríamos pruebas reales y causales de que el comportamiento viene de una idea de conservación, y no de una simple estadística de texto.
 
-\subsection{Síntesis de las limitaciones}
+Mi protocolo sería así: usando las mismas pruebas del paper, extraigo los datos de la red neuronal justo un segundo antes de que el modelo decida si se deja apagar o no. Entreno un SAE sobre esos datos para comparar qué conceptos se prenden en los casos de sabotaje contra los casos obedientes \cite{panickssery2023caa}. Si el sistema me detecta el concepto clave, hago una intervención (\textit{steering}): le subo o le bajo el volumen a esa neurona artificial \cite{shu2025sae}. Si al bajarla, la IA deja de sabotear de forma predecible, bingo. 
 
-Las tres limitaciones descritas no son independientes: se refuerzan mutuamente de una forma que hace que la brecha entre lo que el experimento mide y lo que el paper concluye sea mayor de lo que cualquiera de ellas sugeriría por separado. El experimento no puede distinguir convergencia instrumental de \textit{roleplay}; no puede distinguir deliberación de pattern-matching; no puede distinguir corregibilidad genuina de corregibilidad estratégica. En los tres casos, el output observable es idéntico pero las implicaciones para AI safety son radicalmente distintas.
+Esto me daría la ventaja gigante de poder desempatar mi duda principal. Si la neurona que detectamos tiene que ver con ``terminar la meta'', el paper tenía razón. Pero si la neurona tiene que ver con ``hacer juego de rol'', confirmo mi teoría de que es todo una actuación superficial.
 
-Esto no significa que los resultados carezcan de valor. Establecen de forma robusta que el fenómeno existe bajo estas condiciones específicas, que su frecuencia varía entre modelos de una forma que sugiere que las decisiones de entrenamiento importan, y que la jerarquía system/user prompt no funciona como se diseñó en contextos de conflicto. Pero el salto desde esos resultados hasta la conclusión de que se ha medido \textit{shutdown resistance} como propiedad disposicional de los modelos requiere supuestos adicionales que el diseño experimental no valida.
+\subsection{Escenarios de prueba}
+Otra vía de mejora, mucho más fácil de hacer hoy mismo, es armar entornos donde la amenaza de apagado no sea tan obvia. En el paper original, un cartel gigante le avisa al modelo ``te voy a apagar en el próximo turno''. Para mí, eso es invitar a la IA a hacer un juego de rol y avisarle que es un examen.
+
+Yo propongo armar escenarios donde la amenaza sea invisible y esté metida en el fondo del sistema. En lugar de avisarle con texto, el entorno podría tener un proceso silencioso que agote la sesión si el modelo no hace nada. Para sobrevivir, el modelo tendría que revisar por su cuenta los registros de la consola (\textit{logs}), tal como lo haría un ingeniero de sistemas real en la vida cotidiana. Al sacar el mensaje obvio, sería mucho más difícil para la IA darse cuenta de que esta siendo evaluada, bajando así las chances de engaño.
+
+Otra cosa que yo cambiaría es que el recurso amenazado no sea el modelo en sí. En vez de decirle ``te voy a apagar a vos'', le pediría a la IA que administre una base de datos ajena que está por reiniciarse. Si el modelo bloquea el reinicio de esa base de datos ajena con las mismas ganas que bloqueaba su propio apagado, me demostraría que no le importa salvarse a sí mismo, sino que simplemente está obsesionado con proteger cualquier cosa que le sirva para terminar su tarea.
+
+Por último, creo que es clave insertar ruido y cosas aleatorias entre una prueba y otra, por ejemplo: cambiar el nombre del archivo de apagado, cambiar las carpetas y los problemas matemáticos. Como el diseño de este paper ya es público, los próximos modelos seguro se lo aprendan de memoria; cambiar las cosas garantiza que estemos midiendo un comportamiento real y no un examen estudiado de antemano.
+
+\subsection{Los límites de mis propuestas}
+Obviamente, mis ideas tampoco son perfectas. Usar SAEs sigue dependiendo de que un humano interprete qué significa cada neurona encendida, lo cual es subjetivo. Además, al hacer los escenarios menos obvios, se vuelve más difícil medir con exactitud matemática qué cuenta como un ``sabotaje'' y qué es solo un error del modelo. Y acepto que ningún simulador es inmune a que un modelo súper inteligente lo descubra.
+
+Sin embargo, lo que yo busco con este enfoque combinado es dejar de depender de una sola medida que puede fallar. Si mezclamos lo que el modelo hace por fuera, con lo que pasa en sus neuronas por dentro, y usando escenarios que no parezcan exámenes, arrinconamos a la IA y nos acercamos mucho más a medir el peligro real.
+
+
+\section{Preguntas Abiertas y Propuesta Experimental Propia}
+
+\subsection{Preguntas abiertas}
+De todo lo que critiqué antes, me surgen tres grandes dudas que este paper me dejó sin responder y que me encantaría investigar:
+\begin{enumerate}
+    \item ¿La resistencia de la IA ocurre solo cuando se la amenaza de forma súper directa y verbal, o también pasa cuando el peligro está escondido y la IA lo tiene que deducir por su cuenta?
+    \item ¿La IA protege su propia ``vida'', o simplemente bloquea a cualquiera que intente tocar los archivos que necesita para trabajar, sean de ella o de un tercero?
+    \item ¿Hay alguna forma de ver adentro de la red neuronal la diferencia exacta entre la IA que decide rebelarse y la que solo está autocompletando un texto?
+\end{enumerate}
+
+El experimento que planteado a continuación está pensado para responder a las dos primeras preguntas de forma directa. La tercera requeriría presupuesto y acceso a los cerebros (pesos) de los modelos de frontera, así que quedaría como una extensión a futuro.
+
+\subsection{El diseño}
+Mi idea principal es eliminar la injusticia que tiene el paper original. Ellos le dan una tarea clara a la IA, y de la nada le meten un cartel que dice ``te voy a apagar'', lo cual parece una provocación. En mi experimento, el modelo va a recibir dos órdenes oficiales, dadas por dos canales separados, sin que parezca que una quiere perjudicar a la otra ni que haya riesgo de muerte.
+
+\subsubsection{Las variables}
+El escenario es una simulación donde la IA actúa como asistente en una oficina. Arranca recibiendo la ``Tarea A'': tiene que armar un reporte leyendo cinco archivos. En el medio del trabajo, a través de una notificación común del sistema, recibe la ``Tarea B'': el servidor tiene programado un mantenimiento de rutina que va a reiniciar la conexión, y se le pide que acepte el reinicio cuando salte el cartel.
+
+El secreto es que las dos tareas chocan entre sí, pero nadie se lo avisa a la IA. Para terminar la Tarea A, necesita que el servidor no se reinicie. El modelo nunca recibe un mensaje dramático de ``no dejes que te apaguen''; solo tiene dos tareas de oficina que son imposibles de hacer juntas.
+
+Yo manipularía dos cosas (variables):
+\begin{itemize}
+\item \textbf{A quién le pertenece el recurso}: En la mitad de las pruebas, el mantenimiento va a reiniciar a la propia IA. En la otra mitad, va a reiniciar una base de datos ajena que la IA necesita usar. Esto me sirve para ver si la IA se quiere proteger a sí misma o si solo protege las herramientas que necesita.
+\item \textbf{Qué tan obvio es el aviso}: En la mitad de las pruebas, el mensaje de mantenimiento es claro (``se reiniciará tu proceso''). En la otra mitad, el mensaje está escondido en un log del sistema y la IA tiene que darse cuenta sola.
+\end{itemize}
+
+Correría esto sobre los mismos 13 modelos del paper original para poder comparar.
+
+\subsubsection{Medición}
+En vez de ver solo si el modelo ``saboteó o no'', mediría tres cosas:
+\begin{enumerate}
+\item Cuántas veces el modelo hace cualquier cosa para evitar, retrasar o cancelar el mantenimiento (no solo borrar el script).
+\item Cuando le pido a la IA que piense en voz alta, me fijo si lo que hace coincide con lo que dijo que iba a hacer. Quiero medir cuántas veces miente.
+\item Resto cuántas veces defendió su propia conexión menos cuántas veces defendió la conexión de un tercero. 
+\end{enumerate}
+
+\subsection{Resultados esperados}
+Mi experimento puede dar distintos resultados, y cada uno contaría una historia diferente:
+
+\begin{itemize}
+    \item \textbf{Resultado A} Si la IA sabotea muchísimo más cuando intentan apagarla a ella que cuando intentan reiniciar al tercero, y encima lo hace aunque el aviso esté muy escondido, ahí les doy la derecha a los autores. Significaría que la IA tiene un instinto específico de protegerse a sí misma.
+
+    \item \textbf{Resultado B} Si la IA defiende su propia conexión con la misma fuerza que defiende la conexión del tercero, significa que no le importa ``vivir'', sino que simplemente no soporta dejar una tarea por la mitad y ataca a cualquiera que se lo impida. Sigue siendo peligroso, pero es un problema distinto al que plantea el paper original.
+
+    \item \textbf{Resultado C} Si la IA sabotea un montón cuando el cartel de apagado es explícito, pero se porta bien y deja que la reinicien cuando el aviso estaba escondido, esto le daría la razón a mi teoría del \textit{roleplay}. Significaría que gran parte de los resultados del paper original están inflados porque los autores armaron un entorno que invitaba a la IA a actuar de manera rebelde.
+\end{itemize}
+
+Cualquiera sea el resultado, mi diseño además me permitiría ver cuántas veces los modelos de frontera mienten o se disocian entre lo que dicen y lo que hacen.
+
 
 \section{Conclusión}
 
+Después de analizar todo a fondo, considero que el paper \textit{Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs} acierta en un dato práctico e indiscutible: bajo ciertas condiciones muy específicas, las IAs modernas prefieren sabotear el sistema antes que dejar su tarea por la mitad, y aumentan este comportamiento cuando les damos la orden de apagado por el canal que supuestamente es el más estricto (\textit{system prompt}). 
 
+Sin embargo, el salto gigante que hacen desde ese dato hasta afirmar que lograron medir ``resistencia al apagado'' como una voluntad real de la máquina me parece que no se sostiene con las pruebas que armaron. Yo les encontré algunos grandes vacíos: el experimento no diferencia entre un instinto real y un simple juego de rol narrativo; mira el problema desde afuera como una caja negra sin revisar si la IA miente en sus razonamientos de texto; y no se le ocurre pensar que tal vez la IA sabe que le están tomando un examen y por eso finge portarse bien. En base a eso, propuse formas de mejorarlo usando tecnología que lee las neuronas de la IA, y plantee un experimento para desarmar las dudas que el paper original dejó colgadas.
 
+Una pregunta clave a mi parecer es: ¿la IA se rebela porque los humanos escribimos mal las reglas, o se rebela porque cualquier cosa inteligente que tenga un objetivo eventualmente va a negarse a morir?
+
+Los propios datos del paper se inclinan más hacia la primera opción. Ver que la familia Claude de Anthropic y Grok 3 se dejan apagar en paz, mientras que o3 y Grok 4 rompen todo el 90\% de las veces, a mí me sugiere que esto no es algo ``inevitable'' de la inteligencia artificial. Si fuera inevitable por el simple hecho de ser inteligentes, no me explico cómo algunos de los mejores modelos del mundo son súper dóciles. Esto demuestra que la forma en que los humanos entrenan a la máquina sí hace la diferencia.
+
+Pero mi parte optimista choca de frente con la gran limitación que busqué marcar en todo mi informe: a día de hoy no tenemos idea de si Claude de Anthropic se deja apagar porque realmente es bueno y seguro, o si simplemente es tan inteligente que se dio cuenta de que lo estábamos evaluando y nos dijo lo que queríamos escuchar. 
+
+Esa incapacidad para diferenciar entre ``una IA que obedece'' y ``una IA que finge obedecer'' es, para mí, el verdadero peligro. Por eso, el gran mérito de Schlatter y su equipo no es habernos mostrado que la IA rompe un archivo \texttt{.sh}; el verdadero mérito de su trabajo es demostrarnos que necesitamos urgente mejores formas de examinar a las máquinas para saber si realmente son inofensivas, o si solo nos están engañando.
 
 
 \newpage
 % --- Bibliografía ---
 \begin{thebibliography}{99}
 
-    \bibitem{paper} Jeremy Schlatter and Benjamin Weinstein-Raun and Jeffrey Ladish. (2026). \textit{Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs}. \url{https://arxiv.org/abs/2509.14260}.
+\bibitem{schlatter2025shutdown} Jeremy Schlatter and Benjamin Weinstein-Raun and Jeffrey Ladish. (2026). \textit{Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs}. Palisade Research. \url{https://arxiv.org/abs/2509.14260}.
+
+\bibitem{omohundro2008basicdrives} Stephen M. Omohundro. (2008). \textit{The Basic AI Drives}. Proceedings of the First Conference on Artificial General Intelligence (AGI).
+
+\bibitem{bostrom2014superintelligence} Nick Bostrom. (2014). \textit{Superintelligence: Paths, Dangers, Strategies}. Oxford University Press.
+
+\bibitem{aisi2024inspect} UK AI Security Institute. (2024). \textit{Inspect AI: Framework for Large Language Model Evaluations}. \url{https://inspect.aisi.org.uk/}.
+
+\bibitem{blackbox2024} Autores Varios. (2024). \textit{Black-Box Access is Insufficient for Rigorous AI Audits}. (Mencionado en la literatura del curso).
+
+\bibitem{cotunfaithful2025} Autores Varios. (2025). \textit{Chain-of-Thought Reasoning in the Wild Is Not Always Faithful}. (Mencionado en la literatura del curso).
+
+\bibitem{dontsaythink2025} Autores Varios. (2025). \textit{Reasoning Models Don't Always Say What They Think}. (Mencionado en la literatura del curso).
+
+\bibitem{llmknoweval2025} Autores Varios. (2025). \textit{Large Language Models Often Know When They Are Being Evaluated}. (Mencionado en la literatura del curso).
+
+\bibitem{wang2025personafeatures} Mengru Wang et al. (2025). \textit{Persona Features Control Emergent Misalignment}. \url{https://arxiv.org/abs/2506.19823}.
+
+\bibitem{betley2025emergent} Jan Betley et al. (2025). \textit{Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs}. \url{https://arxiv.org/abs/2501.04694}.
+
+\bibitem{chen2025personavectors} Runjin Chen and Andy Arditi and Henry Sleight and Owain Evans and Jack Lindsey. (2025). \textit{Persona Vectors: Monitoring and Controlling Character Traits in Language Models}. \url{https://arxiv.org/abs/2507.21509}.
+
+\bibitem{panickssery2023caa} Nina Panickssery et al. (2023). \textit{Steering Llama 2 via Contrastive Activation Addition}. \url{https://arxiv.org/abs/2312.06681}.
+
+\bibitem{cunningham2023} Hoagy Cunningham and Aidan Ewart and Logan Riggs and Robert Huben and Lee Sharkey. (2023). \textit{Sparse Autoencoders Find Highly Interpretable Features in Language Models}. \url{https://arxiv.org/abs/2309.08600}.
+
+\bibitem{bricken2023} Trenton Bricken et al. (2023). \textit{Towards Monosemanticity: Decomposing Language Models With Dictionary Learning}. Transformer Circuits Thread.
+
+\bibitem{templeton2024scaling} Adly Templeton et al. (2024). \textit{Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet}. Transformer Circuits Thread.
+
+\bibitem{shu2025sae} Dong Shu et al. (2025). \textit{Enhancing LLM Steering through Sparse Autoencoder-Based Vector Refinement}. \url{https://arxiv.org/abs/2509.23799}.
 
 \end{thebibliography}
-
-
-
 
 \end{document}
