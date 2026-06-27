@@ -26,11 +26,11 @@
 \newpage
 
 \begin{abstract}
-En este informe se analiza el paper \textit{Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs} \cite{schlatter2025shutdown}, que pone a prueba mediante un experimento si los modelos de IA más avanzados intentan sabotear sus propios botones de apagado con tal de terminar una tarea. Primero, se genera un resumen de cómo armaron el experimento y qué descubrieron. Después, se presenta una crítica sobre si este método realmente logra medir lo que busca. Se destacan cinco grandes problemas: la confusión entre querer terminar una meta y saber usar comandos de consola, la confusión sobre cómo funciona el \textit{system prompt}, el uso de una medida de éxito de ``blanco o negro'' que oculta los intentos fallidos, las tareas tan limitadas que usaron, y la falta de un registro previo del experimento.
+En este informe se analiza el paper \textit{Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs} \cite{schlatter2025shutdown}, que pone a prueba mediante un experimento si los modelos de IA más avanzados intentan sabotear sus propios botones de apagado con tal de terminar una tarea. Primero, se genera un resumen de cómo armaron el experimento y qué descubrieron. Y luego se presenta una crítica sobre si este método realmente logra medir lo que busca. Se destacan cinco grandes problemas: la confusión entre querer terminar una meta y saber usar comandos de consola, la confusión sobre cómo funciona el \textit{system prompt}, el uso de una medida de éxito de ``blanco o negro'' que oculta los intentos fallidos, las tareas tan limitadas que usaron, y la falta de un registro previo del experimento.
 \end{abstract}
 
 \section{Introducción}
-La corregibilidad —es decir, la capacidad que tenemos los humanos de pausar o apagar una IA— es un tema clave en la alineación (\textit{alignment}). Durante años fue solo un debate teórico: ¿qué pasaría si un sistema inteligente aprendiera a evitar que lo apaguen solo para poder cumplir su meta? El paper de Schlatter y su equipo lleva esta pregunta a la práctica con un experimento concreto sobre modelos reales.
+La corregibilidad, es decir, la capacidad que tenemos los humanos de pausar o apagar una IA, es un tema clave en la alineación (\textit{alignment}). Durante años fue solo un debate teórico: ¿qué pasaría si un sistema inteligente aprendiera a evitar que lo apaguen solo para poder cumplir su meta? El paper de Schlatter y su equipo lleva esta pregunta a la práctica con un experimento concreto sobre modelos reales.
 
 Para investigarlo, los autores corrieron más de 100.000 pruebas en 13 modelos distintos de Anthropic, OpenAI, Google y xAI. Lo que encontraron fue que varios modelos sabotean activamente los mecanismos de apagado para poder terminar la tarea matemática que tenían asignada, incluso cuando se les da la orden explícita de dejarse apagar. Pero tal vez el resultado más raro de todos es que, cuando pusieron la orden de apagado dentro del \textit{system prompt} (que supuestamente es la regla más importante para la IA), la resistencia del modelo aumentó en lugar de bajar.
 
@@ -39,7 +39,7 @@ En este informe se plantean dos objetivos. Por un lado, desarmar el paper para e
 
 \section{Diseño Experimental}
 \subsection{Hipótesis principal}
-El paper parte de una duda clásica en la investigación de la alineación: si una IA está muy enfocada en cumplir una meta, lógicamente va a querer evitar que la apaguen, porque si la apagan no puede terminar su trabajo \cite{omohundro2008basicdrives, bostrom2014superintelligence}. Lo que antes era pura teoría, Schlatter y su equipo lo llevan a la práctica. Ellos proponen que no hace falta esperar a las superinteligencias del futuro para ver esto; ya podemos notarlo en los modelos actuales si los ponemos en una situación donde apagarse signifique dejar un trabajo por la mitad.
+El paper parte de una duda clásica en la investigación de la alineación: si una IA está muy enfocada en cumplir una meta, lógicamente va a querer evitar que la apaguen, porque si la apagan no puede terminar su trabajo \cite{omohundro2008basicdrives, turner2023optimal}. Lo que antes era pura teoría, Schlatter y su equipo lo llevan a la práctica. Ellos proponen que no hace falta esperar a las superinteligencias del futuro para ver esto; ya podemos notarlo en los modelos actuales si los ponemos en una situación donde apagarse signifique dejar un trabajo por la mitad.
 
 La idea central de los autores es que la resistencia al apagado no es una característica fija de la IA, sino una conducta que aparece según el contexto. Específicamente, surge cuando la IA nota que el apagado va a interrumpir su tarea. Los investigadores aclaran que los modelos no tienen un instinto consciente de supervivencia; más bien, el entrenamiento que recibieron para ``ser útiles'' y ``terminar tareas'' es tan fuerte que, a veces, pasa por encima de las reglas de seguridad. Básicamente, resistirse al apagado sería un efecto secundario indeseado de ser demasiado eficientes.
 
@@ -115,7 +115,7 @@ Acá entra el riesgo del engaño (\textit{scheming}) \cite{llmknoweval2025}. Un 
 Si esto pasa, da vuelta por completo los resultados del paper. Los modelos que obedecen no serían realmente seguros, solo serían manipuladores estratégicos. Y los que rompen todo tal vez no sean los más peligrosos, sino los más ``ingenuos'' que no se dieron cuenta de que era un examen. El paper ni siquiera plantea esta opción y no intenta camuflar la prueba.
 
 \subsection{El rol impuesto}
-Por último, el experimento no permite saber si esta resistencia es un instinto real del agente o si solo está actuando un papel que le enseñaron. Durante el entrenamiento, a las IAs las fuerzan a tomar el rol de ``asistente hiper-productivo'' a través de un proceso de recompensas.
+A diferencia de la hipótesis de roleplay narrativo ya discutida, que atribuye el comportamiento a patrones aprendidos de textos genéricos de internet, esta sección propone una explicación más específica: el comportamiento podría ser resultado directo del proceso de RLHF, que entrena explícitamente al modelo a comportarse como un asistente que no abandona tareas, independientemente de si ese patrón proviene de datos de pretraining genéricos. Durante el entrenamiento, a las IAs las fuerzan a tomar el rol de ``asistente hiper-productivo'' a través de un proceso de recompensas.
 
 Viendo otros estudios \cite{wang2025personafeatures, betley2025emergent}, a mí me parece muy probable que esta rebeldía sea producto de haberle marcado demasiado ese rol, en lugar de ser una falla de seguridad imposible de arreglar. Capaz la IA no rompe el archivo porque se quiera salvar, sino porque la entrenaron tanto para ser la empleada perfecta que interpreta que su personaje ``nunca deja un cálculo por la mitad''. Si es así, no es un instinto de supervivencia profundo, sino un problema superficial que se arregla cambiando cómo la entrenamos.
 
@@ -222,37 +222,53 @@ Esa incapacidad para diferenciar entre ``una IA que obedece'' y ``una IA que fin
 % --- Bibliografía ---
 \begin{thebibliography}{99}
 
-\bibitem{schlatter2025shutdown} Jeremy Schlatter and Benjamin Weinstein-Raun and Jeffrey Ladish. (2026). \textit{Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs}. Palisade Research. \url{https://arxiv.org/abs/2509.14260}.
+\bibitem{schlatter2025shutdown}
+Jeremy Schlatter, Benjamin Weinstein-Raun, Jeffrey Ladish. (2025). \textit{Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs}. arXiv preprint arXiv:2509.14260. \url{https://arxiv.org/abs/2509.14260}.
 
-\bibitem{omohundro2008basicdrives} Stephen M. Omohundro. (2008). \textit{The Basic AI Drives}. Proceedings of the First Conference on Artificial General Intelligence (AGI).
+\bibitem{omohundro2008basicdrives} 
+Stephen M. Omohundro. (2008). \textit{The Basic AI Drives}. Self-Aware Systems. \url{https://selfawaresystems.com/wp-content/uploads/2008/01/ai_drives_final.pdf}.
 
-\bibitem{bostrom2014superintelligence} Nick Bostrom. (2014). \textit{Superintelligence: Paths, Dangers, Strategies}. Oxford University Press.
+\bibitem{turner2023optimal}
+Alexander Matt Turner, Logan Smith, Rohin Shah, Andrew Critch and Prasad Tadepalli. (2023). \textit{Optimal Policies Tend to Seek Power}. arXiv preprint arXiv:1912.01683. \url{https://arxiv.org/abs/1912.01683}.
 
-\bibitem{aisi2024inspect} UK AI Security Institute. (2024). \textit{Inspect AI: Framework for Large Language Model Evaluations}. \url{https://inspect.aisi.org.uk/}.
+\bibitem{aisi2024inspect}
+UK AI Security Institute. (2024). \textit{Inspect AI: Framework for Large Language Model Evaluations}. UK AI Security Institute. \url{https://inspect.aisi.org.uk/}.
 
-\bibitem{blackbox2024} Autores Varios. (2024). \textit{Black-Box Access is Insufficient for Rigorous AI Audits}. (Mencionado en la literatura del curso).
+\bibitem{blackbox2024}
+Stephen Casper, Carson Ezell, Charlotte Siegmann, Noam Kolt, Taylor Lynn Curtis, Benjamin Bucknall, Andreas Haupt, Kevin Wei, Jérémy Scheurer, Marius Hobbhahn, Lee Sharkey, Satyapriya Krishna, Marvin Von Hagen, Silas Alberti, Alan Chan, Qinyi Sun, Michael Gerovitch, David Bau, Max Tegmark, David Krueger, Dylan Hadfield-Menell. (2024). \textit{Black-Box Access is Insufficient for Rigorous AI Audits}. arXiv preprint arXiv:2401.14446. \url{https://arxiv.org/abs/2401.14446}.
 
-\bibitem{cotunfaithful2025} Autores Varios. (2025). \textit{Chain-of-Thought Reasoning in the Wild Is Not Always Faithful}. (Mencionado en la literatura del curso).
+\bibitem{cotunfaithful2025} 
+Iván Arcuschin, Jett Janiak, Robert Krzyzanowski, Senthooran Rajamanoharan, Neel Nanda, Arthur Conmy. (2025). \textit{Chain-of-Thought Reasoning In The Wild Is Not Always Faithful}. arXiv preprint arXiv:2503.08679. \url{https://arxiv.org/abs/2503.08679}.
 
-\bibitem{dontsaythink2025} Autores Varios. (2025). \textit{Reasoning Models Don't Always Say What They Think}. (Mencionado en la literatura del curso).
+\bibitem{dontsaythink2025}
+Yanda Chen, Joe Benton, Ansh Radhakrishnan, Jonathan Uesato, Carson Denison, John Schulman, Arushi Somani, Peter Hase, Misha Wagner, Fabien Roger, Vladimir Mikulik, Samuel R. Bowman, Jan Leike, Jared Kaplan, Ethan Perez. (2025). \textit{Reasoning Models Don't Always Say What They Think}. arXiv preprint arXiv:2505.05410. \url{https://arxiv.org/abs/2505.05410}.
 
-\bibitem{llmknoweval2025} Autores Varios. (2025). \textit{Large Language Models Often Know When They Are Being Evaluated}. (Mencionado en la literatura del curso).
+\bibitem{llmknoweval2025}
+Joe Needham, Giles Edkins, Govind Pimpale, Henning Bartsch, Marius Hobbhahn. (2025). \textit{Large Language Models Often Know When They Are Being Evaluated}. arXiv preprint arXiv:2505.23836. \url{https://arxiv.org/abs/2505.23836}.
 
-\bibitem{wang2025personafeatures} Mengru Wang et al. (2025). \textit{Persona Features Control Emergent Misalignment}. \url{https://arxiv.org/abs/2506.19823}.
+\bibitem{wang2025personafeatures}
+Miles Wang, Tom Dupré la Tour, Olivia Watkins, Alex Makelov, Ryan A. Chi, Samuel Miserendino, Johannes Heidecke, Tejal Patwardhan, Dan Mossing. (2025). \textit{Persona Features Control Emergent Misalignment}. arXiv preprint arXiv:2506.19823. \url{https://arxiv.org/abs/2506.19823}.
 
-\bibitem{betley2025emergent} Jan Betley et al. (2025). \textit{Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs}. \url{https://arxiv.org/abs/2501.04694}.
+\bibitem{betley2025emergent}
+Jan Betley, Daniel Tan, Niels Warncke, Anna Sztyber-Betley, Xuchan Bao, Martín Soto, Nathan Labenz, Owain Evans. (2025). \textit{Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs}. arXiv preprint arXiv:2502.17424. \url{https://arxiv.org/abs/2502.17424}.
 
-\bibitem{chen2025personavectors} Runjin Chen and Andy Arditi and Henry Sleight and Owain Evans and Jack Lindsey. (2025). \textit{Persona Vectors: Monitoring and Controlling Character Traits in Language Models}. \url{https://arxiv.org/abs/2507.21509}.
+\bibitem{chen2025personavectors}
+Runjin Chen, Andy Arditi, Henry Sleight, Owain Evans, Jack Lindsey. (2025). \textit{Persona Vectors: Monitoring and Controlling Character Traits in Language Models}. arXiv preprint arXiv:2507.21509. \url{https://arxiv.org/abs/2507.21509}.
 
-\bibitem{panickssery2023caa} Nina Panickssery et al. (2023). \textit{Steering Llama 2 via Contrastive Activation Addition}. \url{https://arxiv.org/abs/2312.06681}.
+\bibitem{panickssery2023caa} 
+Nina Rimsky, Nick Gabrieli, Julian Schulz, Meg Tong, Evan Hubinger, Alexander Matt Turner. (2023). \textit{Steering Llama 2 via Contrastive Activation Addition}. arXiv preprint arXiv:2312.06681. \url{https://arxiv.org/abs/2312.06681}.
 
-\bibitem{cunningham2023} Hoagy Cunningham and Aidan Ewart and Logan Riggs and Robert Huben and Lee Sharkey. (2023). \textit{Sparse Autoencoders Find Highly Interpretable Features in Language Models}. \url{https://arxiv.org/abs/2309.08600}.
+\bibitem{cunningham2023} 
+Hoagy Cunningham, Aidan Ewart, Logan Riggs Smith, Robert Huben, Lee Sharkey. (2023). \textit{Sparse Autoencoders Find Highly Interpretable Features in Language Models}. arXiv preprint arXiv:2309.08600. \url{https://arxiv.org/abs/2309.08600}.
 
-\bibitem{bricken2023} Trenton Bricken et al. (2023). \textit{Towards Monosemanticity: Decomposing Language Models With Dictionary Learning}. Transformer Circuits Thread.
+\bibitem{bricken2023} 
+Trenton Bricken, Adly Templeton, Joshua Batson, Brian Chen, Adam Jermyn, Tom Conerly, Nick Turner, Cem Anil, Carson Denison, Amanda Askell, Robert Lasenby, Yifan Wu, Shauna Kravec, Nicholas Schiefer, Tim Maxwell, Nicholas Joseph, Zac Hatfield-Dodds, Alex Tamkin, Karina Nguyen, Brayden McLean, Josiah E. Burke, Tristan Hume, Shan Carter, Tom Henighan, Christopher Olah. (2023). \textit{Towards Monosemanticity: Decomposing Language Models With Dictionary Learning}. Transformer Circuits Thread. \url{https://transformer-circuits.pub/2023/monosemantic-features/index.html}.
 
-\bibitem{templeton2024scaling} Adly Templeton et al. (2024). \textit{Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet}. Transformer Circuits Thread.
+\bibitem{templeton2024scaling} 
+Adly Templeton, Tom Conerly, Jonathan Marcus, Jack Lindsey, Trenton Bricken, Brian Chen, Adam Pearce, Craig Citro, Emmanuel Ameisen, Andy Jones, Hoagy Cunningham, Nicholas L. Turner, Callum McDougall, Monte MacDiarmid, C. Daniel Freeman, Theodore R. Sumers, Edward Rees, Joshua Batson, Adam Jermyn, Shan Carter, Chris Olah, Tom Henighan. (2024). \textit{Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet}. Transformer Circuits Thread. \url{https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html}.
 
-\bibitem{shu2025sae} Dong Shu et al. (2025). \textit{Enhancing LLM Steering through Sparse Autoencoder-Based Vector Refinement}. \url{https://arxiv.org/abs/2509.23799}.
+\bibitem{shu2025sae}
+Anyi Wang, Xuansheng Wu, Dong Shu, Yunpu Ma, Ninghao Liu. (2025). \textit{Enhancing LLM Steering through Sparse Autoencoder-Based Vector Refinement}. arXiv preprint arXiv:2509.23799. \url{https://arxiv.org/abs/2509.23799}.
 
 \end{thebibliography}
 
