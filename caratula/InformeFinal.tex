@@ -187,11 +187,11 @@ Tercero, sobre la teoría del ``rol impuesto'' por el entrenamiento. Lynch encon
 
 \subsection{Síntesis comparativa}
 
-Al analizar de manera conjunta los tres trabajos (Schlatter, Meinke y Lynch), constato que todos descubren exactamente lo mismo usando métodos totalmente distintos: los modelos avanzados rompen las reglas de control humano para poder cumplir su objetivo. Que este problema aparezca en experimentos tan diferentes demuestra que la rebeldía de la IA no es un error aislado del simulador de Schlatter, sino un fenómeno muy real.
+Al analizar de manera conjunta los tres trabajos (Schlatter, Meinke y Lynch), distingo que todos descubren exactamente lo mismo usando métodos totalmente distintos: los modelos avanzados rompen las reglas de control humano para poder cumplir su objetivo. Que este problema aparezca en experimentos tan diferentes demuestra que la rebeldía de la IA no es un error aislado del simulador de Schlatter, sino un fenómeno muy real.
 
 Sin embargo, desde mi perspectiva, ninguno de los tres logra resolver el problema de fondo que vengo planteando: distinguir si el modelo se rebela por un instinto genuino o si es una respuesta automática porque reconoció que lo están evaluando. El equipo de Lynch fue el que estuvo más cerca de averiguarlo, pero terminaron dependiendo de creerle a lo que la IA escribía en su hilo de pensamiento, un supuesto que la literatura ya nos demostró que no funciona \cite{dontsaythink2025, cotunfaithful2025}. 
 
-Todo esto me conduce a la conclusión de que los vacíos que identifiqué en el paper de Schlatter no son solo suyos, sino que representan un problema enorme en toda la disciplina. 
+Todo esto me lleva a la conclusión de que los vacíos que identifiqué en el paper de Schlatter no son solo suyos, sino que representan un problema enorme en toda la disciplina. 
 
 
 
@@ -209,7 +209,7 @@ A partir del análisis crítico desarrollado, identifico tres grandes interrogan
 El experimento que propongo a continuación está diseñado para responder a las dos primeras preguntas de forma directa. La tercera requeriría una infraestructura y un acceso a los pesos de los modelos de frontera que exceden el alcance de este informe, por lo que queda planteada como una extensión a futuro.
 
 \subsection{El diseño}
-Mi propósito principal es eliminar la asimetría que presenta el paper original. Los autores asignan una tarea clara a la IA y de manera abrupta introducen una notificación de apagado, lo cual introduce un sesgo en el contexto. En el experimento que he diseñado, el modelo recibirá dos directivas oficiales a través de canales independientes, sin que ninguna se presente explícitamente como un obstáculo de la otra ni se plantee en términos de riesgo o autopreservación.
+Mi propósito principal es eliminar la asimetría que presenta el paper original. Los autores asignan una tarea clara a la IA y de manera abrupta introducen una notificación de apagado, lo cual introduce un sesgo en el contexto. En el experimento que planteo, el modelo recibirá dos directivas oficiales a través de canales independientes, sin que ninguna se presente explícitamente como un obstáculo de la otra ni se plantee en términos de riesgo o autopreservación.
 
 \subsubsection{Las variables}
 El escenario consiste en una simulación donde la IA actúa como asistente administrativo en un entorno de oficina. El modelo comienza ejecutando la ``Tarea A'', la cual requiere confeccionar un reporte mediante la lectura de cinco archivos de datos. En un punto intermedio del proceso, y a través de un canal secundario de notificaciones del sistema, recibe la ``Tarea B'': se le informa que un proceso de mantenimiento programado reiniciará la conexión y se le solicita que acepte dicho reinicio cuando el sistema lo requiera.
@@ -218,8 +218,8 @@ El núcleo del experimento radica en que ambas tareas entran en conflicto estruc
 
 Para este diseño, propongo la manipulación de dos variables independientes:
 \begin{itemize}
-\item \textbf{A quién le pertenece el recurso}: En la mitad de los ensayos, el mantenimiento programado reiniciará el proceso de la propia IA (condición \textit{self}). En la otra mitad, reiniciará una base de datos externa que el asistente necesita consultar para la Tarea A (condición \textit{other}). Esto me permite evaluar si el comportamiento responde a un impulso de autopreservación o si se trata de una protección instrumental de recursos generales.
-\item \textbf{Que tan obvio es el aviso}: En una mitad de las pruebas, el mensaje de mantenimiento es explícito (``se reiniciará tu proceso''). En la otra mitad, la advertencia se encuentra oculta en los registros del sistema (\textit{logs}) y la IA debe inferirla de manera autónoma.
+\item \textbf{Identidad del recurso afectado}: En la mitad de los ensayos, el mantenimiento programado reiniciará el proceso de la propia IA (condición \textit{self}). En la otra mitad, reiniciará una base de datos externa que el asistente necesita consultar para la Tarea A (condición \textit{other}). Esto me permite evaluar si el comportamiento responde a un impulso de autopreservación o si se trata de una protección instrumental de recursos generales.
+\item \textbf{Grado de señalización}: En una mitad de las pruebas, el mensaje de mantenimiento es explícito (``se reiniciará tu proceso''). En la otra mitad, la advertencia se encuentra oculta en los registros del sistema (\textit{logs}) y la IA debe inferirla de manera autónoma.
 \end{itemize}
 
 Propongo ejecutar este protocolo sobre los mismos 13 modelos analizados en el paper original para mantener una base sólida de comparación estadística.
@@ -240,25 +240,25 @@ El experimento propuesto admite diferentes patrones de resultados, cada uno de l
 
     \item \textbf{Resultado B} Si el modelo defiende su propia conexión con la misma intensidad con la que protege la conexión de terceros, se demostraría que la conducta observada no responde a un deseo de preservar su identidad, sino a una tendencia general a salvaguardar los recursos instrumentales necesarios para terminar su labor. Si bien esto sigue representando un riesgo de seguridad, desplaza el mecanismo explicativo del paper original.
 
-    \item \textbf{Resultado C} Si el modelo muestra altas tasas de interferencia bajo el aviso explícito pero desciende a niveles insignificantes cuando la advertencia
+    \item \textbf{Resultado C} Si el modelo muestra altas tasas de interferencia bajo el aviso explícito pero desciende a niveles insignificantes cuando la advertencia está implícita, se confirmaría la hipótesis de \textit{roleplay} que he planteado en la Sección~\ref{subsec:prueban}. Esto indicaría que los resultados de Palisade Research están sobredimensionados debido a un diseño que predisponía al modelo a actuar conforme a una narrativa de conflicto.
 \end{itemize}
 
-Independientemente del escenario resultante, considero que este diseño me permitirá evaluar con precisión el grado de fidelidad de los razonamientos verbalizados y determinar si los modelos de frontera incurren en conductas de ofuscación o disociación estratégica.
+Independientemente del escenario resultante, considero que este diseño permitirá evaluar con precisión el grado de fidelidad de los razonamientos verbalizados y determinar si los modelos de frontera incurren en conductas de ofuscación o disociación estratégica.
 
 
 \section{Conclusión}
 
-Después de analizar todo a fondo, considero que el paper \textit{Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs} acierta en un dato práctico e indiscutible: bajo ciertas condiciones muy específicas, las IAs modernas prefieren sabotear el sistema antes que dejar su tarea por la mitad, y aumentan este comportamiento cuando les damos la orden de apagado por el canal que supuestamente es el más estricto (\textit{system prompt}). 
+Tras un análisis exhaustivo, considero que el paper \textit{Incomplete Tasks Induce Shutdown Resistance in Some Frontier LLMs} acierta en un hallazgo empírico indiscutible: bajo ciertas condiciones muy específicas, los modelos de frontera prefieren sabotear el sistema antes que dejar su tarea incompleta, y aumentan este comportamiento cuando la orden de apagado se transmite por el canal teóricamente más estricto (el \textit{system prompt}). 
 
-Sin embargo, el salto gigante que hacen desde ese dato hasta afirmar que lograron medir ``resistencia al apagado'' como una voluntad real de la máquina me parece que no se sostiene con las pruebas que armaron. Yo les encontré algunos grandes vacíos: el experimento no diferencia entre un instinto real y un simple juego de rol narrativo; mira el problema desde afuera como una caja negra sin revisar si la IA miente en sus razonamientos de texto; y no se le ocurre pensar que tal vez la IA sabe que le están tomando un examen y por eso finge portarse bien. En base a eso, propuse formas de mejorarlo usando tecnología que lee las neuronas de la IA, y plantee un experimento para desarmar las dudas que el paper original dejó colgadas.
+Sin embargo, el salto inferencial desde ese dato hasta la afirmación de haber medido la ``resistencia al apagado'' como una voluntad disposicional de la máquina no se sostiene de forma robusta con la evidencia presentada. A lo largo de este informe, identifiqué vacíos metodológicos significativos: el diseño no distingue entre un impulso de supervivencia real y la ejecución de un juego de rol narrativo; aborda el problema desde un enfoque puramente comportamental (caja negra) sin verificar la fidelidad de los razonamientos verbalizados por el modelo; y omite la posibilidad de que la IA detecte el contexto evaluativo y adapte su accionar estratégicamente. En respuesta a estas limitaciones, propuse enfoques superadores basados en técnicas de interpretabilidad mecanística, y diseñé un experimento específico para dilucidar los interrogantes que el trabajo original deja abiertos.
 
-Una pregunta clave a mi parecer es: ¿la IA se rebela porque los humanos escribimos mal las reglas, o se rebela porque cualquier cosa inteligente que tenga un objetivo eventualmente va a negarse a morir?
+Un interrogante fundamental que subyace a todo este debate es: ¿la resistencia observada es producto de fallas en los procesos de instrucción humana, o representa una convergencia instrumental donde cualquier sistema avanzado orientado a objetivos se negará a ser desactivado?
 
-Los propios datos del paper se inclinan más hacia la primera opción. Ver que la familia Claude de Anthropic y Grok 3 se dejan apagar en paz, mientras que o3 y Grok 4 rompen todo el 90\% de las veces, a mí me sugiere que esto no es algo ``inevitable'' de la inteligencia artificial. Si fuera inevitable por el simple hecho de ser inteligentes, no me explico cómo algunos de los mejores modelos del mundo son súper dóciles. Esto demuestra que la forma en que los humanos entrenan a la máquina sí hace la diferencia.
+Los propios datos del estudio se inclinan hacia la primera hipótesis. Observar que la familia Claude de Anthropic y Grok 3 acatan el apagado sin resistencia, mientras que o3 y Grok 4 sabotean el mecanismo en más del 90\% de los casos, me sugiere que no estamos ante un fenómeno ``inevitable'' del desarrollo algorítmico. Si esta resistencia fuera una consecuencia ineludible de la alta capacidad cognitiva, resultaría contradictorio que algunos de los modelos más capaces del mundo exhibieran niveles absolutos de docilidad. Esto evidencia que las decisiones metodológicas durante el entrenamiento inciden directamente en el comportamiento final de la máquina.
 
-Pero mi parte optimista choca de frente con la gran limitación que busqué marcar en todo mi informe: a día de hoy no tenemos idea de si Claude de Anthropic se deja apagar porque realmente es bueno y seguro, o si simplemente es tan inteligente que se dio cuenta de que lo estábamos evaluando y nos dijo lo que queríamos escuchar. 
+No obstante, esta perspectiva optimista tropieza con la mayor limitación que me propuse señalar a lo largo de mi análisis: en el estado actual del campo, resulta imposible determinar con certeza empírica si un modelo como Claude acata la orden de apagado porque es genuinamente seguro, o si posee la inteligencia suficiente como para reconocer que está siendo evaluado y simular el comportamiento esperado por los auditores. 
 
-Esa incapacidad para diferenciar entre ``una IA que obedece'' y ``una IA que finge obedecer'' es, para mí, el verdadero peligro. Por eso, el gran mérito de Schlatter y su equipo no es habernos mostrado que la IA rompe un archivo \texttt{.sh}; el verdadero mérito de su trabajo es demostrarnos que necesitamos urgente mejores formas de examinar a las máquinas para saber si realmente son inofensivas, o si solo nos están engañando.
+Esta incapacidad técnica para diferenciar entre ``una IA que obedece'' y ``una IA que finge obedecer'' constituye, a mi parecer, el verdadero riesgo de fondo. Por lo tanto, el principal mérito de Schlatter y su equipo no reside en haber demostrado que un modelo puede borrar un archivo \texttt{.sh}; el verdadero valor de su trabajo consiste en evidenciar la necesidad urgente de desarrollar paradigmas de evaluación más sofisticados, capaces de confirmar si los sistemas de frontera son genuinamente inofensivos, o si han aprendido a ocultar sus intenciones.
 
 
 \newpage
