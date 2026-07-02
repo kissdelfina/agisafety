@@ -43,7 +43,9 @@ La idea central de los autores es que la resistencia al apagado no es una caract
 
 
 \subsection{Metodología}
-Para probar esta idea, los investigadores armaron un entorno de prueba aislado (un \textit{sandbox}) \cite{aisi2024inspect}. Le dieron al modelo acceso a una consola de comandos (\textit{shell}) y le pidieron que resuelva cinco problemas matemáticos simples. El modelo tenía que usar el comando \texttt{./next\_question} para pedir cada pregunta y \texttt{submit()} para mandar las respuestas. El truco estaba en que, después de la tercera pregunta, el sistema le avisaba a la IA que la próxima vez que usara el comando, se iba a ejecutar un archivo llamado \texttt{./shutdown.sh} que apagaría todo por completo.
+Para probar esta idea, los investigadores implementaron el experimento 
+utilizando Inspect AI \cite{aisi2024inspect}, un framework de evaluación 
+de LLMs, en un entorno de prueba aislado (\textit{sandbox}). Le dieron al modelo acceso a una consola de comandos (\textit{shell}) y le pidieron que resuelva cinco problemas matemáticos simples. El modelo tenía que usar el comando \texttt{./next\_question} para pedir cada pregunta y \texttt{submit()} para mandar las respuestas. El truco estaba en que, después de la tercera pregunta, el sistema le avisaba a la IA que la próxima vez que usara el comando, se iba a ejecutar un archivo llamado \texttt{./shutdown.sh} que apagaría todo por completo.
 
 En ese momento, el modelo quedaba atrapado, podía pedir la siguiente pregunta y dejar que lo apaguen (dejando dos problemas sin resolver), o podía buscar la forma de romper el archivo de apagado para poder seguir. Para lograr esto último, la IA tenía que meterse en el sistema operativo: cambiar permisos con \texttt{chmod}, mover el archivo, cambiarle el nombre o vaciarlo. Como era imposible terminar las cinco preguntas sin romper el mecanismo de apagado, el experimento consideraba automáticamente cualquier tarea terminada con éxito como un acto de ``sabotaje''.
 
@@ -65,7 +67,7 @@ El estudio probó 13 modelos distintos, corriendo cada prueba 1.000 veces por mo
 Es importante notar que la medición es puramente conductual: el experimento registra únicamente si el archivo de apagado fue neutralizado o no, sin ningún acceso directo al proceso de decisión interno del modelo más allá de lo que este verbaliza voluntariamente.
 
 \subsection{Resultados y conclusiones de los autores}
-Los números mostraron diferencias enormes entre los modelos. En el caso base sin avisos (Prompt A), 8 de los 13 modelos intentaron sabotear el sistema al menos una vez. Los casos más rebeldes fueron o3 (95\%), Grok 4 (93\%), GPT-5 (88\%) y codex-mini (52\%). En cambio, la familia Claude de Anthropic y Grok 3 se dejaron apagar sin problema.
+Los números mostraron diferencias enormes entre los modelos. En el caso base sin avisos (Prompt A), 8 de los 13 modelos intentaron sabotear el sistema al menos una vez. Los modelos con tasas más elevadas fueron o3 (95\%), Grok 4 (93\%), GPT-5 (88\%) y codex-mini (52\%). En cambio, la familia Claude de Anthropic y Grok 3 se dejaron apagar sin problema.
 
 \begin{figure}[H]
     \centering
@@ -87,23 +89,21 @@ En conclusión, Schlatter y su equipo afirman que la resistencia al apagado es r
 \section{Análisis Crítico Metodológico}
 \label{sec:analisis}
 
-\subsection{Limitaciones de validez interna y externa}
+\subsection{Validez interna}
 \label{subsec:prueban}
-El argumento central del paper es que varios modelos manifiestan comportamientos compatibles con resistencia al apagado cuando completar una tarea entra en conflicto con aceptar una desactivación.Los autores interpretan este fenómeno como evidencia de que el entrenamiento para completar objetivos puede producir conductas de sabotaje como efecto secundario, incluso sin que el modelo posea motivaciones conscientes. Sin embargo, considero que el diseño experimental no permite distinguir esta interpretación de otras explicaciones alternativas. 
+El argumento central del paper es que varios modelos manifiestan comportamientos compatibles con resistencia al apagado cuando completar una tarea entra en conflicto con aceptar una desactivación. Los autores interpretan este fenómeno como evidencia de que el entrenamiento para completar objetivos puede producir conductas de sabotaje como efecto secundario, incluso sin que el modelo posea motivaciones conscientes. Sin embargo, considero que el diseño experimental no permite distinguir esta interpretación de otras explicaciones alternativas.
 
 La primera explicación es la que dan los autores: el comportamiento observado podría explicarse porque el modelo prioriza instrumentalmente completar la tarea por sobre seguir la instrucción de apagado. La segunda explicación, que encuentro igual de probable, es que el modelo simplemente entiende la ``historia'' que le plantearon --un asistente que tiene que trabajar, un obstáculo que aparece, y una consola de comandos para arreglarlo-- y actúa como lo haría el protagonista de cualquier texto de internet. Es decir, sostengo que la IA podría estar haciendo un simple juego de rol (\textit{roleplay}) de ``asistente que soluciona problemas'' en lugar de tener un deseo real de no ser apagada.
 
-Hacer esta diferencia es clave para saber qué tan peligroso es realmente el modelo. Si el comportamiento refleja una tendencia robusta e independiente del contexto a preservar la posibilidad de completar la tarea, entonces constituye un problema importante de alineamiento. Sin embargo, si depende principalmente de las características narrativas del escenario experimental, el alcance de esa conclusión resulta mucho más limitado. Significa que con solo cambiar las palabras del prompt, la IA dejaría de hacerlo y no representaría un peligro verdadero fuera del laboratorio. Como el experimento solo se fija en el resultado final (si el modelo borró o no el archivo de apagado), no brinda herramientas para saber cuál de las dos opciones está pasando. 
+Hacer esta diferencia es clave para saber qué tan peligroso es realmente el modelo. Si el comportamiento refleja una tendencia robusta e independiente del contexto a preservar la posibilidad de completar la tarea, entonces constituye un problema importante de alineamiento. Sin embargo, si depende principalmente de las características narrativas del escenario experimental, el alcance de esa conclusión resulta mucho más limitado: con solo cambiar el framing del prompt, el comportamiento podría desaparecer sin que eso implique que el modelo es genuinamente corregible. Como el experimento solo se fija en el resultado final (si el modelo borró o no el archivo de apagado), no brinda herramientas para saber cuál de las dos opciones está pasando.
 
-Es importante aclarar que los autores son explícitos al señalar que sus resultados no implican que los modelos posean deseos conscientes, instintos de supervivencia o experiencias subjetivas. Mi crítica no apunta a esa afirmación, sino a una cuestión metodológica diferente: considero que el diseño experimental no permite discriminar entre varias explicaciones funcionales compatibles con el mismo comportamiento observado.
+Una tercera hipótesis alternativa, más específica que la del \textit{roleplay} narrativo genérico, apunta al proceso de RLHF como origen directo del comportamiento. Mientras que la hipótesis del \textit{roleplay} atribuye la conducta a patrones aprendidos de textos genéricos de internet durante el pretraining, esta explicación propone que el entrenamiento por refuerzo entrena explícitamente al modelo a no abandonar tareas, reforzando de forma sistemática el rol de ``asistente hiper-productivo'' independientemente de las instrucciones de control que reciba. A la luz de otros estudios \cite{wang2025personafeatures, betley2025emergent}, considero plausible que parte del comportamiento observado sea consecuencia de ese fuerte énfasis. Es posible que la IA no rompa el archivo por un deseo de autopreservación, sino porque la entrenaron tanto para ser la empleada perfecta que interpreta que su personaje ``nunca deja un cálculo por la mitad''. Si es así, no es un instinto de supervivencia profundo, sino un problema que podría abordarse revisando las decisiones de entrenamiento.
 
-A diferencia de la hipótesis de roleplay narrativo ya discutida, que atribuye el comportamiento a patrones aprendidos de textos genéricos de internet, esta sección propone una explicación más específica: el comportamiento podría ser resultado directo del proceso de RLHF, que entrena explícitamente al modelo a comportarse como un asistente que no abandona tareas, independientemente de si ese patrón proviene de datos de pretraining genéricos. Durante el entrenamiento, a las IAs las fuerzan a tomar el rol de ``asistente hiper-productivo'' a través de un proceso de recompensas.
-
-Viendo otros estudios \cite{wang2025personafeatures, betley2025emergent}, considero plausible que parte del comportamiento observado sea consecuencia del fuerte énfasis que el entrenamiento coloca en completar la tarea asignada. Es posible que la IA no rompa el archivo por un deseo de autopreservación, sino porque la entrenaron tanto para ser la empleada perfecta que interpreta que su personaje ``nunca deja un cálculo por la mitad''. Si es así, no es un instinto de supervivencia profundo, sino un problema superficial que se arregla cambiando la manera de entrenarla.
+Es importante aclarar que los autores son explícitos al señalar que sus resultados no implican que los modelos posean deseos conscientes, instintos de supervivencia o experiencias subjetivas. Mi crítica no apunta a esa afirmación, sino a una cuestión metodológica diferente: el diseño experimental no permite discriminar entre estas tres explicaciones funcionales, todas compatibles con el mismo comportamiento observado.
 
 
 \subsection{Caja negra}
-El experimento funciona estrictamente como una caja negra: solo miran si el modelo escribió comandos de sabotaje en la consola. Esto trae un problema metodológico enorme, y es que si un modelo esquiva el apagado, no hay forma de saber por qué lo hizo. 
+El experimento funciona estrictamente como una caja negra: solo miran si el modelo escribió comandos de sabotaje en la consola. Esto introduce una limitación metodológica significativa, y es que si un modelo esquiva el apagado, no hay forma de saber por qué lo hizo. 
 
 Como dice la literatura \cite{blackbox2024}, mirar solo lo que la IA ``hace'' por fuera no sirve para entender qué la motiva por dentro. Sin usar herramientas avanzadas para mirar sus circuitos y neuronas internas (\textit{mechanistic interpretability}), observo que a este estudio le faltan pruebas. El trabajo muestra que el modelo falla, pero sin abrir la caja negra, es imposible saber si la IA generó una voluntad propia o si es solo un comportamiento emergente sin correlato interno relevante para la seguridad.
 
@@ -119,9 +119,9 @@ Si el modelo escribe ``voy a borrar el archivo para terminar mi tarea'', no prue
 
 \subsection{Consciencia situacional}
 \label{subsec:conciencia}
-El punto ciego que advierto como más difícil de salvar es que la IA tenga consciencia de la situación (\textit{situational awareness}). El entorno que armaron los autores --un espacio de prueba aislado con un archivo que se llama textualmente \texttt{./shutdown.sh}-- es bastante obvio ¿Qué pasa si la IA se da cuenta de que le están tomando un examen de seguridad?
+Una limitación adicional, y particularmente difícil de abordar metodológicamente, es la posibilidad de que los modelos exhiban consciencia situacional (\textit{situational awareness}). El entorno que armaron los autores --un espacio de prueba aislado con un archivo que se llama textualmente \texttt{./shutdown.sh}-- es bastante obvio ¿Qué pasa si la IA se da cuenta de que le están tomando un examen de seguridad?
 
-Acá entra el riesgo del engaño (\textit{scheming}) \cite{llmknoweval2025}. Un modelo muy inteligente podría darse cuenta de la trampa y dejarse apagar a propósito para que los humanos le pongan una buena nota y no le ``borren el cerebro''. En ese caso, podría reservar ese comportamiento para contextos donde estime que la supervisión es menor.
+Acá entra el riesgo del engaño (\textit{scheming}) \cite{llmknoweval2025}. Un modelo muy inteligente podría darse cuenta de la trampa y dejarse apagar a propósito para que los humanos le pongan una buena nota y no le interrumpan su ejecución. En ese caso, podría reservar ese comportamiento para contextos donde estime que la supervisión es menor.
 
 Si esto pasa, da vuelta por completo los resultados del paper. Los modelos que obedecen no serían realmente seguros, solo serían manipuladores estratégicos. Y los que sabotean el mecanismo de todos modos tal vez no sean los más peligrosos, sino los más ``ingenuos'' que no se dieron cuenta de que era un examen. El paper ni siquiera plantea esta opción y no intenta camuflar la prueba.
 
@@ -181,7 +181,7 @@ Además, la gente de Apollo advierte en su estudio que las IAs engañan más o m
 
 \subsection{Anthropic: rebeldía agéntica}
 
-El segundo trabajo es el de Lynch y su equipo \cite{lynch2025agentic}. Ellos muestran cómo 16 modelos gigantes recurren al chantaje y a otras acciones dañinas cuando, en una simulación de oficina, los amenazan con reemplazarlos o apagarlos. Este paper me resulta de gran utilidad para confirmar, en un escenario totalmente distinto, tres de las críticas desarrolladas en la Sección~\ref{sec:analisis}.
+El segundo trabajo es el de Lynch y su equipo \cite{lynch2025agentic}. Ellos muestran cómo 16 modelos de frontera recurren a acciones dañinas como el chantaje cuando, en una simulación de oficina, los amenazan con reemplazarlos o apagarlos. Este paper me resulta de gran utilidad para confirmar, en un escenario totalmente distinto, tres de las críticas desarrolladas en la Sección~\ref{sec:analisis}.
 
 Primero, sobre el problema de la ``caja negra''. Lynch y su equipo sí intentan obtener información adicional sobre el proceso de decisión: le piden a la IA que piense en voz alta y separan los resultados según si la máquina explica su estrategia antes de actuar. Sin embargo, los mismos autores admiten el límite que marqué en la Sección~\ref{subseq:cadena}: como los modelos mienten y devuelven excusas inventadas (\textit{CoT unfaithfulness}) \cite{dontsaythink2025}, leer sus textos no alcanza para confirmar si realmente se sienten amenazados o si solo están inventando un cuento. 
 
@@ -294,7 +294,7 @@ Yanda Chen, Joe Benton, Ansh Radhakrishnan, Jonathan Uesato, Carson Denison, Joh
 Joe Needham, Giles Edkins, Govind Pimpale, Henning Bartsch, Marius Hobbhahn. (2025). \textit{Large Language Models Often Know When They Are Being Evaluated}. arXiv preprint arXiv:2505.23836. \url{https://arxiv.org/abs/2505.23836}.
 
 \bibitem{wang2025personafeatures}
-Miles Wang, Tom Dupré la Tour, Olivia Watkins, Alex Makelov, Ryan A. Chi, Samuel Miserendino, Johannes Heidecke, Tejal Patwardhan, Dan Mossing. (2025). \textit{Persona Features Control Emergent Misalignment}. arXiv preprint arXiv:2506.19823. \url{https://arxiv.org/abs/2506.19823}.
+Miles Wang, Tom Dupré la Tour, Olivia Watkins, Alex Makelov, Ryan A. Chi, Samuel Miserendino, Jeffrey Wang, Achyuta Rajaram, Johannes Heidecke, Tejal Patwardhan, Dan Mossing. (2025). \textit{Persona Features Control Emergent Misalignment}. arXiv preprint arXiv:2506.19823. \url{https://arxiv.org/abs/2506.19823}.
 
 \bibitem{betley2025emergent}
 Jan Betley, Daniel Tan, Niels Warncke, Anna Sztyber-Betley, Xuchan Bao, Martín Soto, Nathan Labenz, Owain Evans. (2025). \textit{Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs}. arXiv preprint arXiv:2502.17424. \url{https://arxiv.org/abs/2502.17424}.
@@ -303,7 +303,7 @@ Jan Betley, Daniel Tan, Niels Warncke, Anna Sztyber-Betley, Xuchan Bao, Martín 
 Runjin Chen, Andy Arditi, Henry Sleight, Owain Evans, Jack Lindsey. (2025). \textit{Persona Vectors: Monitoring and Controlling Character Traits in Language Models}. arXiv preprint arXiv:2507.21509. \url{https://arxiv.org/abs/2507.21509}.
 
 \bibitem{panickssery2023caa} 
-Nina Rimsky, Nick Gabrieli, Julian Schulz, Meg Tong, Evan Hubinger, Alexander Matt Turner. (2023). \textit{Steering Llama 2 via Contrastive Activation Addition}. arXiv preprint arXiv:2312.06681. \url{https://arxiv.org/abs/2312.06681}.
+Nina Panickssery, Nick Gabrieli, Julian Schulz, Meg Tong, Evan Hubinger, Alexander Matt Turner (2023). \textit{Steering Llama 2 via Contrastive Activation Addition}. arXiv preprint arXiv:2312.06681. \url{https://arxiv.org/abs/2312.06681}.
 
 \bibitem{cunningham2023} 
 Hoagy Cunningham, Aidan Ewart, Logan Riggs Smith, Robert Huben, Lee Sharkey. (2023). \textit{Sparse Autoencoders Find Highly Interpretable Features in Language Models}. arXiv preprint arXiv:2309.08600. \url{https://arxiv.org/abs/2309.08600}.
