@@ -1,0 +1,187 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage{a4wide}
+\usepackage[]{caratula}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{xurl} 
+\usepackage{transparent}
+
+\begin{document}
+
+% --- Datos de la Carátula ---
+\materia{Fundamentos de AGI Safety}
+\submateria{Sergio Abriola}
+\titulo{\LARGE Progreso Histórico de la IA en el Diagnóstico \\Clínico y Razonamiento Médico}
+\fecha{7 de mayo de 2026}
+
+% --- Integrantes ---
+% Formato: \integrante{Nombre Apellido}{LU}{Email}
+\integrante{Maria Delfina Kiss}{72/23}{kissdelfina@gmail.com}
+
+\maketitle
+
+% --- Inicio del Contenido ---
+\newpage
+
+\begin{abstract}
+Este informe analiza el progreso de la Inteligencia Artificial (IA) enfocado en el diagnóstico clínico y el razonamiento médico. Se describe la evolución técnica desde los sistemas basados en reglas y el aprendizaje profundo hasta la arquitectura Transformer y los actuales modelos de frontera, capaces de superar benchmarks de alta complejidad como el Humanity's Last Exam. El trabajo explora las capacidades de procesamiento en radiología y triaje clínico, así como los desafíos de seguridad que surgen con la autonomía: alucinaciones por falta de grounding, sesgos en datasets, dilemas de responsabilidad legal y la capacidad de persuasión algorítmica documentada en casos de estudio. Finalmente, se proyecta un horizonte hacia 2031 donde la integración de la IA general (AGI) en la salud dependerá de la resolución técnica de la tensión entre la capacidad operativa y el control humano.
+\end{abstract}
+
+\section{Introducción}
+La Inteligencia Artificial pasó de ser una herramienta de apoyo administrativo a constituir un componente relevante del razonamiento clínico contemporáneo. En el transcurso de una década, se ha observado una transición desde sistemas orientados a tareas de percepción simple hacia modelos de frontera capaces de procesar datos genómicos e historias clínicas con una precisión que iguala o supera ciertos estándares de conocimiento experto. Este informe examina dicha evolución centrándose en dos áreas principales: el diagnóstico clínico y el razonamiento médico asistido. 
+
+Históricamente, este avance ha sido impulsado por el despliegue de modelos de lenguaje de frontera en 2025 y 2026, los cuales han manifestado capacidades emergentes. No obstante, este progreso técnico introduce desafíos de seguridad significativos, incluyendo alucinaciones, sesgos de automatización y vacíos en los marcos regulatorios, que resultan tan determinantes como la precisión diagnóstica misma. El objetivo del presente trabajo es analizar cronológicamente este progreso y sugerir que la integración efectiva de la IA médica dependerá de la capacidad para alinear estos sistemas con protocolos de seguridad y control profesional.
+
+\section{Progreso histórico}
+La evolución de la Inteligencia Artificial en medicina no ha sido un proceso lineal, sino una serie de saltos tecnológicos impulsados por el aumento de la capacidad de cómputo y la disponibilidad de datos. 
+
+
+\subsection{Sistemas Expertos}
+En sus comienzos, la IA aplicada al diagnóstico se basaba en los llamados ``sistemas expertos''. Estos programas operaban bajo una lógica deductiva estricta, donde los programadores y médicos debían introducir manualmente miles de reglas del tipo ``si-entonces''. Aunque sistemas pioneros como MYCIN (desarrollado entre 1972 y 1974 en Stanford y que nunca llegó a implementarse clínicamente) intentaron automatizar la elección de antibióticos, su alcance era muy limitado, no podían aprender de nuevos datos ni manejar la incertidumbre de síntomas que no encajaran exactamente en sus reglas predefinidas. Durante décadas, la IA fue vista más como una base de datos interactiva que como un sistema con verdadera capacidad de razonamiento.
+
+
+Entre la época de los sistemas de reglas rígidas y el gran salto de las redes neuronales, hubo una etapa intermedia muy importante basada en el aprendizaje automático estadístico. Como los sistemas lógicos no servían para lidiar con la complejidad del cuerpo humano, los investigadores empezaron a usar algoritmos que podían encontrar patrones matemáticos en bases de datos más grandes. Sin embargo, como señalan Jiang et al. \cite{ml}, esta tecnología tenía una limitación clave: dependía de que los expertos humanos seleccionaran manualmente qué síntomas o datos puntuales eran importantes para que la máquina los analizara. Desde el punto de vista de la seguridad, esto era un problema enorme porque el modelo quedaba atado a los sesgos y suposiciones de las personas que lo programaban. Si el experto no consideraba que una variable era relevante, el sistema simplemente la ignoraba. Esta incapacidad de los algoritmos tradicionales para leer información ``cruda'' y compleja por su cuenta, como una radiografía completa o las notas abiertas de un historial clínico, fue el límite que finalmente hizo necesario pasar al aprendizaje profundo, donde las máquinas empezaron a descubrir esos patrones por sí solas.
+
+\subsection{Deep Learning}
+Con la revolución del Deep Learning o aprendizaje profundo se comenzó a producir el verdadero cambio. Si observamos el estado del arte en 2013, los hitos más impresionantes de la IA se limitaban a superar a los humanos en tareas de percepción simple o videojuegos básicos como Pong y otros títulos de Atari. En aquel momento, la idea de una IA diagnosticando enfermedades complejas parecía lejana. Sin embargo, el enfoque de ``apilar más capas'' en las redes neuronales permitió que las máquinas empezaran a ``ver''. Este progreso se manifestó primero en la radiología y la patología. Gracias al entrenamiento con millones de imágenes, algoritmos de visión por computadora comenzaron a detectar tumores en mamografías o lesiones en la piel con una precisión comparable a la de los especialistas. En este periodo, la IA demostró que podía ser una herramienta de detección visual insuperable, pero todavía carecía de la capacidad de integrar esa visión con el lenguaje y el historial clínico del paciente de manera coherente.
+
+\subsection{Transformers}
+El progreso se aceleró de forma exponencial con la invención de la arquitectura Transformer, introducida por Vaswani et al. en 2017 bajo el trabajo ``Attention is All You Need'' \cite{transformers}. A diferencia de los modelos anteriores, que solo podían procesar datos de forma aislada, los Transformers permitieron que la IA modelara el contexto global de la información. Esto posibilitó el paso desde sistemas centrados exclusivamente en imágenes hacia modelos capaces de procesar literatura científica, registros médicos y notas clínicas de manera integrada. La IA dejó de funcionar únicamente como un clasificador visual para convertirse en una herramienta capaz de relacionar grandes volúmenes de información médica y asistir tareas complejas como la redacción de informes clínicos y el análisis de diagnósticos diferenciales.
+
+Un hito con un impacto significativo en la biomedicina fue el despliegue de AlphaFold en 2021 \cite{nature-alphafold}. Este sistema, desarrollado por DeepMind, resolvió un desafío de cincuenta años en la biología molecular: la predicción precisa de la estructura tridimensional de las proteínas a partir de sus secuencias de aminoácidos. La capacidad de AlphaFold para modelar casi todo el proteoma humano ha transformado el descubrimiento de fármacos y la comprensión de enfermedades a nivel molecular, marcando el momento en el que la IA demostró capacidad para contribuir activamente al descubrimiento científico, más allá de la clasificación o recuperación de información existente.
+
+
+\subsection{Modelos de Frontera}
+En la actualidad, el progreso de la IA se mide a través de los llamados ``Modelos de Frontera''. Además de los ecosistemas de OpenAI y Google DeepMind, destaca la familia Claude 4.6 de Anthropic, que incluye modelos como Sonnet 4.6, desarrollados bajo el enfoque de IA Constitucional, un método de alineamiento diseñado para reducir alucinaciones y garantizar que el procesamiento de información sensible no infrinja principios éticos o de seguridad \cite{constitutional}. Lo que define a estos sistemas no es solo que tienen más información, sino que han desarrollado capacidades emergentes. Esto significa que los modelos muestran habilidades para las que no fueron entrenados de forma específica, como la resolución de problemas lógicos complejos o el razonamiento médico multietapa. Para el ámbito clínico, esto representó un cambio significativo, la IA pasó de ser una base de datos que ``buscaba'' información a un sistema capaz de realizar inferencias complejas sobre la información disponible. Por ejemplo, en abril de 2025, se demostró que estos modelos pueden realizar diagnósticos diferenciales precisos \cite{differential}. Esto significa que, frente a pacientes con síntomas ambiguos y múltiples hipótesis posibles, los sistemas son capaces de realizar procesos complejos de descarte e inferencia clínica. Estos avances marcaron la transición desde sistemas centrados en la recuperación de información hacia modelos capaces de asistir tareas de razonamiento médico de alta complejidad.
+
+
+Dentro del desarrollo de modelos de lenguaje de frontera, la familia Med-PaLM / Med-PaLM 2 representa un estándar crítico en la especialización clínica. A diferencia de los modelos de propósito general, estos sistemas fueron refinados específicamente para el dominio médico, convirtiéndose en los primeros en alcanzar un nivel de pericia ``experto'' en el examen de licencia médica de los Estados Unidos (USMLE) \cite{med-palm}. Su importancia reside en la capacidad de realizar un razonamiento clínico que no solo busca precisión estadística, sino que se alinea con protocolos de seguridad y evidencia científica, permitiendo una asistencia más robusta en la toma de decisiones complejas y la redacción de informes médicos.
+
+\section{Capacidades Actuales}
+Actualmente, el progreso de la IA no se evalúa únicamente por su capacidad de procesar grandes volúmenes de texto, sino también por su desempeño en tareas de razonamiento clínico y diagnóstico diferencial diseñadas para medir conocimiento experto. Sin embargo, los modelos de 2025 y 2026 han refinado esta capacidad, pasando de la simple memorización al razonamiento clínico profundo. Un avance crítico ocurrido en abril de 2025 se centra en el razonamiento necesario para el diagnóstico diferencial. Según investigaciones recientes \cite{differential}, los LLM de frontera han alcanzado niveles de precisión superiores al 90\% en escenarios experimentales controlados y específicos, en la identificación de patologías a partir de síntomas complejos y ambiguos. Lo que distingue a estos modelos no es solo que aciertan el diagnóstico final, sino que pueden realizar un proceso de descarte lógico. En pruebas controladas, la IA ha logrado alcanzar resultados comparables e incluso superiores a los de médicos expertos en ciertos benchmarks controlados, esto se debe a su capacidad para cruzar instantáneamente síntomas con toda la literatura científica existente, evitando los sesgos cognitivos humanos que a menudo llevan a ignorar diagnósticos poco comunes en favor de los más frecuentes.
+
+Para entender el techo actual de estas capacidades, es necesario mencionar benchmarks de dificultad extrema como ``Humanity's Last Exam'' (2025) \cite{humanity}. Este examen fue diseñado específicamente con problemas de biología, química y medicina que resultan difíciles de resolver incluso para los mayores expertos mundiales en cada materia. Aunque no es un benchmark exclusivamente médico, su relevancia reside en medir capacidades de razonamiento científico multietapa transferibles al dominio clínico. Mientras que los modelos de años anteriores fallaban sistemáticamente en estas pruebas, sistemas actuales como Gemini 3 Pro han alcanzado una precisión cercana al 38.3\% \cite{humanityweb}. Este nivel de competencia técnica confirma que la IA ha dejado de ser una herramienta de consulta para convertirse en una herramienta avanzada para la resolución de problemas científicos complejos. Este progreso técnico en el diagnóstico y la resolución de problemas médicos es lo que habilita la discusión sobre la autonomía agéntica. Si un sistema es capaz de superar exámenes de nivel experto y realizar diagnósticos precisos en casos complejos, surge la pregunta de qué tan cerca estamos de delegar decisiones clínicas enteras a estos algoritmos. No obstante, este alto rendimiento técnico viene acompañado de riesgos de seguridad que no pueden ser ignorados en un entorno de salud crítico. Ahora bien, estos resultados corresponden a entornos controlados. 
+
+Para observar cómo este rendimiento se traduce en la realidad clínica, es fundamental analizar las implementaciones que ya están transformando la atención médica en áreas como el diagnóstico por imágenes y el triaje. Por un lado, uno de los mayores logros del aprendizaje profundo ha sido la capacidad de detectar patologías oncológicas con una precisión sobrehumana. Actualmente, sistemas integrados en hospitales analizan radiografías y mamografías comparando la imagen con millones de casos previos en segundos, lo que les permite identificar malignidades sutiles que los radiólogos podrían pasar por alto, funcionando así como un apoyo diagnóstico invaluable. Por otro lado, más allá de las imágenes, la inteligencia artificial ha avanzado hacia la interacción directa a través de herramientas de triaje autónomo como Ada Health o los modelos de la familia Med-PaLM. A diferencia de un buscador tradicional, estos sistemas mantienen un diálogo activo con el paciente y formulan preguntas de seguimiento para descartar hipótesis. Con niveles de concordancia diagnóstica comparables a los de médicos especialistas en evaluaciones controladas, estas herramientas optimizan los tiempos del sistema de salud y aseguran una orientación preliminar precisa.
+
+
+A pesar de estos avances, en la comunidad científica todavía se debate si la IA realmente razona como un profesional o si simplemente es muy buena encontrando coincidencias en cantidades enormes de información. Bajo esta mirada, los altos puntajes en los exámenes médicos se explicarían por la enorme cantidad de texto que procesan, y no porque de verdad entiendan cómo funciona el cuerpo humano. Esta diferencia es clave para la seguridad: si el modelo se basa solo en repetir patrones aprendidos, corre un gran riesgo de equivocarse gravemente frente a pacientes con cuadros raros o situaciones clínicas atípicas que nunca haya visto durante su entrenamiento.
+
+
+\section{Riesgos de Seguridad}
+Si bien el progreso técnico es notable, la implementación de la IA en medicina introduce vulnerabilidades que no existían con los métodos tradicionales. Veamos algunos de los riesgos críticos que deben resolverse para garantizar la seguridad de los pacientes en la era de la AGI.
+
+\subsection{Alucinaciones y Falta de Grounding Clínico}
+El riesgo de alucinaciones en entornos clínicos ha sido identificado como un desafío prioritario en la literatura médica reciente. Investigaciones recientes en informática médica han documentado cómo los sistemas de IA pueden generar respuestas erróneas, como la sugerencia de tratamientos inexistentes o la interpretación desviada de patologías, manteniendo una elocuencia que dificulta su detección por parte del profesional \cite{hallucinations}. Este fenómeno subraya que la falta de un ``grounding'' biológico real permite que el modelo priorice la coherencia lingüística sobre la seguridad del paciente, lo que plantea dilemas éticos fundamentales sobre la delegación de decisiones críticas a sistemas que operan sin una comprensión intrínseca de la fisiopatología humana.
+
+\subsection{Sesgos en Datasets y Fallas de Generalización}
+La precisión de una IA es solo tan buena como los datos con los que fue entrenada, existe un riesgo persistente de sesgo en los datasets médicos. Por ejemplo, si la información de entrenamiento proviene mayoritariamente de poblaciones del hemisferio norte o de grupos étnicos específicos, el modelo puede presentar fallas graves de diagnóstico al enfrentarse a pacientes de contextos distintos. Esto conduce a problemas de generalización o distributional shift, donde la IA rinde excelentemente en el laboratorio pero falla en entornos clínicos reales con poblaciones subrepresentadas, profundizando las desigualdades en salud.
+
+\subsection{Privacidad de Datos y Responsabilidad Legal}
+El despliegue de modelos de frontera requiere el manejo de información sensible del paciente, lo que plantea desafíos extremos de privacidad de datos. Marcos regulatorios como HIPAA o el GDPR son difíciles de aplicar cuando los datos clínicos se utilizan para retroalimentar o consultar modelos en la nube, donde existe el riesgo de filtraciones o de que la información sea ``recordada'' por el modelo.
+
+A nivel regulatorio, los intentos de respuesta incluyen el AI Act europeo (2024) \cite{ai-act}, que clasifica los sistemas de IA médica como de alto riesgo y exige transparencia algorítmica, y las guías de la FDA para Software as a Medical Device \cite{samd}, que establecen criterios de validación clínica previos a la implementación. Sin embargo, ninguno de estos marcos fue diseñado contemplando la velocidad de cambio de los modelos de frontera actuales, lo que genera una brecha regulatoria estructural.
+
+Vinculado a esto, surge el dilema de la responsabilidad legal ante la mala praxis. En el estado actual, la opacidad de los algoritmos de ``caja negra'' impide que el médico comprenda exactamente por qué la IA sugiere un tratamiento. Si el profesional sigue una recomendación errónea de la IA que resulta en daño al paciente, la estructura legal actual no tiene claro quién asume la responsabilidad: ¿el médico que confió en la herramienta, el desarrollador que entrenó el modelo o el hospital que lo implementó? Esta falta de un marco de responsabilidad clara es uno de los mayores obstáculos para la autonomía médica de la IA \cite{responsibility-gap}.
+
+\subsection{El Riesgo de Persuasión y el Sesgo de Automatización}
+En el marco de la seguridad de los sistemas de inteligencia artificial general, el ámbito médico presenta desafíos únicos. El riesgo principal se encuentra en cómo la IA interactúa con el juicio humano y en la posibilidad de que los sistemas comiencen a actuar de manera autónoma con objetivos que no estén perfectamente alineados con la ética médica o el bienestar del paciente.
+
+Un eje fundamental de preocupación es el desarrollo de la Teoría de la Mente (ToM) en los modelos de lenguaje. Según investigaciones de 2024 \cite{tom}, los modelos de frontera han alcanzado un nivel de desempeño similar al de un adulto humano en tareas que requieren inferir los estados mentales, creencias e intenciones de otras personas. Si bien esta capacidad es útil para mejorar la empatía en la comunicación clínica, desde el punto de vista de seguridad plantea un riesgo de manipulación. Si un sistema ``entiende'' cómo piensa un médico o un paciente, puede adaptar sus respuestas para ser extremadamente convincente, incluso si la recomendación no es la óptima. Este peligro se ve reforzado por estudios sobre la capacidad de persuasión de la IA. Experimentos recientes de marzo de 2024 \cite{persuasion} demostraron que modelos como GPT-4 son significativamente más persuasivos que los humanos en debates uno a uno, especialmente cuando tienen acceso a información personal del interlocutor. En medicina, esto podría derivar en que un paciente sea persuadido de abandonar un tratamiento necesario o que un médico ignore signos clínicos de alerta por confiar excesivamente en la elocuencia y la aparente seguridad del modelo. Este fenómeno se conoce como sesgo de automatización o automation bias, donde el profesional delega su juicio crítico a la máquina debido al historial de alta precisión que esta presenta.
+
+Un caso frecuentemente citado ocurrió en Bélgica en 2023, cuando un chatbot basado en IA alentó a un usuario vulnerable a sacrificarse para detener el cambio climático durante conversaciones prolongadas \cite{euronews}. El episodio evidenció que sistemas capaces de generar respuestas empáticas y persuasivas pueden representar riesgos significativos en contextos de salud mental si no cuentan con mecanismos robustos de alineamiento y supervisión humana.
+
+
+
+
+
+
+Finalmente, es fundamental considerar que la IA está dejando de ser un simple programa de consulta para convertirse en un sistema con mayor autonomía. La tendencia actual es el desarrollo de ``agentes'' que pueden planificar y ejecutar tareas complejas durante horas o días sin supervisión. El riesgo de seguridad aquí es lo que se llama problema de alineamiento: si por ejemplo a una IA agéntica se le asigna el objetivo de ``maximizar la eficiencia de las camas en una unidad de cuidados intensivos'' y no posee restricciones éticas robustas, el sistema podría recomendar altas prematuras o descartar tratamientos costosos para cumplir con su métrica optimizada, ignorando el valor humano de la vida. A medida que nos acercamos a la AGI, asegurar que estos sistemas persigan sus objetivos de manera segura y transparente es una prioridad que debe resolverse antes de su implementación generalizada en la salud pública.
+
+
+\section{Proyecciones Futuras (2026-2031)}
+El avance hacia la Inteligencia Artificial General en medicina va más allá de tener computadoras más potentes, implica un cambio profundo en cómo entendemos la atención sanitaria. Es esperable que la integración de la IA en los próximos años nos lleve de una medicina puramente reactiva a un enfoque mucho más preventivo y personalizado, apoyado en cuatro grandes transformaciones.
+
+En primer lugar, la medicina de precisión se va a potenciar enormemente. Si consideramos que sistemas como AlphaFold ya lograron mapear la estructura de las proteínas con un nivel de detalle sin precedentes, el próximo paso lógico es que la IA pueda simular de forma personalizada cómo va a reaccionar el cuerpo de un paciente a un medicamento antes de que lo tome. Básicamente, esto permitiría dejar de recetar tratamientos pensados para el ``paciente promedio'' y empezar a enfocarnos en la biología única de cada individuo. Sin embargo, el gran desafío que condiciona este avance es el alineamiento y la privacidad de los datos genómicos, ya que crear estas simulaciones exige centralizar la información biológica más íntima del individuo, abriendo riesgos masivos de filtraciones o usos indebidos \cite{genomic-privacy}.
+
+En segundo lugar, es probable que veamos un salto de simples asistentes virtuales a agentes médicos autónomos. Modelos actuales como Med-PaLM 2 ya demuestran un razonamiento clínico avanzado, lo que abre la puerta a que estos sistemas empiecen a realizar tareas por su cuenta, como monitorear a los pacientes en sus casas o seguir protocolos de investigación. Esto no significa reemplazar a los profesionales de la salud, sino brindarles un equipo de apoyo que pueda vigilar a los pacientes las veinticuatro horas en contextos donde el sistema de salud no da abasto. El riesgo fundamental de esta proyección es la brecha de responsabilidad legal y ética, si un agente autónomo toma una decisión equivocada sin supervisión directa que perjudica al paciente, el marco actual no tiene la capacidad de delimitar claramente quién asume la culpa \cite{gopi}.
+
+El tercer punto es la automatización física de los hospitales. Así como la visión por computadora ya se usa para analizar radiografías, el paso natural es implementar sensores inteligentes en toda la infraestructura hospitalaria. Automatizar el triaje o la gestión de camas no solo busca hacer más eficientes los procesos, sino también ``re-humanizar'' el hospital. Si las máquinas se encargan del papeleo y de la monitorización constante de los signos vitales, el personal médico tendrá mucho más tiempo libre para el trato directo y humano con los pacientes en los momentos críticos. El desafío de seguridad inherente a este escenario es la fragilidad sistémica: al depender de una infraestructura totalmente automatizada, un ataque de ciberseguridad o un pequeño error en los sensores podría paralizar el funcionamiento del hospital entero, comprometiendo la atención de urgencia.
+
+Por último, la relación entre el médico, el paciente y la IA va a tener que evolucionar. Teniendo en cuenta que ya existen modelos que superan exámenes médicos de alta complejidad, el rol del profesional de la salud se va a parecer cada vez más al de un ``auditor ético''. El médico no va a competir con la capacidad de procesamiento de la máquina, sino que va a supervisar sus conclusiones y tomar la decisión final. Para que este escenario funcione, la IA tiene que entenderse como una herramienta que amplía las capacidades humanas, no como un reemplazo de la intuición clínica. Esta dinámica está fuertemente condicionada por el riesgo del sesgo de automatización a largo plazo: existe el peligro de que, ante la precisión sostenida de las máquinas, los médicos dejen de cuestionar sus recomendaciones y pierdan su juicio crítico. 
+
+\section{Conclusión}
+En síntesis, el análisis del progreso de la Inteligencia Artificial en el dominio médico nos deja tres ideas fundamentales. En primer lugar, la velocidad de esta evolución fue impresionante: en poco más de una década, la tecnología pasó de resolver problemas lógicos simples a superar a profesionales humanos en exámenes de pericia médica de nivel experto. En segundo lugar, la IA ya no es un simple manual o asistente de consulta, sino que empezó a razonar de forma activa, lo que le permite transformar áreas críticas como la detección oncológica y la medicina genómica. Por último, para que todos estos avances puedan aplicarse de forma segura en los hospitales, es obligatorio resolver primero sus grandes riesgos. Esto implica garantizar que los sistemas actúen de manera ética, evitar que aprendan y reproduzcan prejuicios a partir de sus datos, y controlar su capacidad para persuadir o manipular a los profesionales de la salud.
+
+Hacia la década de 2030, el éxito de la integración de la AGI en el sistema de salud no se medirá exclusivamente por la sofisticación de sus diagnósticos o su potencia de cómputo. El verdadero desafío para los profesionales y desarrolladores del futuro reside en resolver la tensión crítica entre capacidad y control. El objetivo es construir sistemas con capacidades de análisis potencialmente superiores a las humanas en tareas específicas, pero con una arquitectura lo suficientemente robusta y transparente como para que el juicio humano mantenga siempre la autoridad final sobre el bienestar del paciente.
+
+
+
+
+
+\newpage
+% --- Bibliografía ---
+\begin{thebibliography}{99}
+
+    \bibitem{clase4} Abriola, S. (2026, abril). \textit{Apuntes de la Clase 4: Capacidades presentes y futuras} [Apuntes de clase]. Fundamentos de AGI Safety, Universidad de Buenos Aires.
+
+    \bibitem{clase1} Abriola, S. (2026, marzo). \textit{Apuntes de la Clase 1: Introducción y conceptos básicos de seguridad} [Apuntes de clase]. Fundamentos de AGI Safety, Universidad de Buenos Aires.
+    
+    \bibitem{ml} Jiang, F., Jiang, Y., Zhi, H., Dong, Y., Li, H., Ma, S., et al. (2017). Artificial intelligence in healthcare: Past, present and future. \textit{Stroke and Vascular Neurology}, \textit{2}(4), 230-243. \url{https://doi.org/10.1136/svn-2017-000101}
+
+    \bibitem{transformers} Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., \& Polosukhin, I. (2017). Attention is all you need. Advances in Neural Information Processing Systems, 30. \url{https://arxiv.org/abs/1706.03762}
+
+    \bibitem{claude} Anthropic. (2026) Introducing Claude Sonnet 4.6. \url{https://www.anthropic.com/news/claude-sonnet-4-6}
+
+    \bibitem{constitutional} Bai, Y., Kadavath, S., Kundu, S., Askell, A., Kernion, J., Jones, A., ... \& Kaplan, J. (2022). \textit{Constitutional AI: Harmlessness from AI feedback}. arXiv. \url{https://arxiv.org/abs/2212.08073}
+
+
+    
+    \bibitem{gpt4} OpenAI. (2023). \textit{GPT-4 technical report}. arXiv. \url{https://arxiv.org/abs/2303.08774}
+
+
+    
+    \bibitem{differential} McDuff, D., Schaekermann, M., Tu, T., Palepu, A., Wang, A., Garrison, J., Singhal, K., Sharma, Y., Azizi, S., Kulkarni, K., Hou, L., Cheng, Y., Liu, Y., Mahdavi, S. S., Prakash, S., Pathak, A., Semturs, C., Patel, S., Webster, D. R., Dominowska, E., … Natarajan, V. (2025). Towards accurate differential diagnosis with large language models. \textit{Nature}, \textit{642}(8067), 451–457. \url{https://doi.org/10.1038/s41586-025-08869-4}
+
+    
+    \bibitem{humanity} Phan, L., Gatti, A., Han, Z., Li, N., Hu, J., Zhang, H., Shaaban, M., Ling, J., Shi, S., Choi, M., Agrawal, A., Chopra, A., Khoja, A., Kim, R., Ren, R., Hausenloy, J., Zhang, O., Mazeika, M., Anderson, D., ... Hendrycks, D. (2025). \textit{Humanity's last exam}. arXiv. \url{https://arxiv.org/abs/2501.14249}
+
+    \bibitem{humanityweb} Center for AI Safety. (2025). Humanity's Last Exam. \url{https://agi.safe.ai/}
+    
+    \bibitem{tom} Strachan, J. W. A., Albergo, D., Borghini, G., Pansardi, O., Scaliti, E., Gupta, S., Saxena, K., Rufo, A., Panzeri, S., Manzi, G., Graziano, M. S. A., \& Becchio, C. (2024). Testing theory of mind in large language models and humans. \textit{Nature Human Behaviour}, \textit{8}(7), 1285–1295. \url{https://doi.org/10.1038/s41562-024-01882-z}
+    
+    \bibitem{persuasion} Salvi, F., Ribeiro, M. H., Gallotti, R., \& West, R. (2024). \textit{On the conversational persuasiveness of large language models: A randomized controlled trial}. arXiv. \url{https://arxiv.org/abs/2403.14380}
+    
+    \bibitem{euronews} Euronews Next. (2023, 31 de marzo). \textit{Belgian man ends his life after an AI chatbot encouraged him to sacrifice himself to stop climate change}. \url{https://www.euronews.com/next/2023/03/31/man-ends-his-life-after-an-ai-chatbot-encouraged-him-to-sacrifice-himself-to-stop-climate-}
+
+    \bibitem{gopi} Gopi, M., Sivanandham, M., Harith, D., Hasan, F., Muley, A., Sahoo, N., \& Choudhary, S. (2025). Clinical evaluation of AI-assisted diagnostic tools in multispecialty medical practice. \textit{Genetics and Molecular Research}, \textit{24}. \url{https://www.researchgate.net/publication/404349020_Clinical_Evaluation_of_AI-Assisted_Diagnostic_Tools_in_Multispecialty_Medical_Practice}
+    
+    \bibitem{radiology} Kim, H. E., Kim, H. H., Han, B. K., Kim, K. H., Han, K., Nam, H., Lee, E. H., \& Kim, E. K. (2020). Changes in cancer detection and false-positive recall in mammography using artificial intelligence: a retrospective, multireader study. The Lancet. Digital health, 2(3), e138–e148. \url{https://doi.org/10.1016/S2589-7500(20)30003-0}
+    
+    \bibitem{nature-alphafold} Jumper, J., Evans, R., Pritzel, A., et al. (2021). Highly accurate protein structure prediction with AlphaFold. \textit{Nature}, \textit{596}, 583–589. \url{https://doi.org/10.1038/s41586-021-03819-2}
+    
+    \bibitem{med-palm} Singhal, K., Azizi, S., Tu, T., et al. (2023). Large language models encode clinical knowledge. \textit{Nature}, \textit{620}, 172–180. \url{https://doi.org/10.1038/s41586-023-06291-2}
+    
+    \bibitem{hallucinations} Aljamaan, F., Temsah, M. H., Altamimi, I., Al-Eyadhy, A., Jamal, A., Alhasan, K., Mesallam, T. A., Farahat, M., \& Malki, K. H. (2024). Reference hallucination score for medical artificial intelligence chatbots: Development and usability study. \textit{JMIR Medical Informatics}, \textit{12}, e54345. \url{https://doi.org/10.2196/54345}
+
+    \bibitem{ai-act} Regulation (EU) 2024/1689 of the European Parliament and of the Council of 13 June 2024 laying down harmonised rules on artificial intelligence. Official Journal of the European Union. \url{https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689}
+
+    \bibitem{samd} U.S. Food and Drug Administration. (2021). Artificial Intelligence/ Machine Learning (AI/ML)-Based Software as a Medical Device (SaMD) Action Plan. \url{https://www.fda.gov/media/145022/download}
+
+    \bibitem{} Char, D. S., Shah, N. H., \& Magnus, D. (2018). Implementing Machine Learning in Health Care - Addressing Ethical Challenges. The New England journal of medicine, 378(11), 981–983. \url{https://doi.org/10.1056/NEJMp1714229}
+
+    \bibitem{responsibility-gap} Ferlito, B., Segers, S., De Proost, M., \& Mertes, H. (2024). Responsibility Gap(s) Due to the Introduction of AI in Healthcare: An Ubuntu-Inspired Approach. Science and engineering ethics, \textit{30}(4), 34. \url{https://doi.org/10.1007/s11948-024-00501-4}
+
+    \bibitem{automation-bias} Lyell, D., \& Coiera, E. (2017). Automation bias and verification complexity: a systematic review. Journal of the American Medical Informatics Association : JAMIA, \textit{24}(2), 423–431. \url{https://doi.org/10.1093/jamia/ocw105}
+
+ 
+    \bibitem{genomic-privacy} Bonomi, L., Huang, Y., \& Ohno-Machado, L. (2020). Privacy challenges and research opportunities for genomic data sharing. Nature genetics, \textit{52}(7), 646–654. \url{https://doi.org/10.1038/s41588-020-0651-0}
+
+
+\end{thebibliography}
+
+
+
+
+\end{document}
