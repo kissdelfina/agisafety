@@ -126,8 +126,6 @@ Por eso, la evaluación de sistemas de frontera debería combinar:
 └── README.md
 ```
 
-Los archivos auxiliares generados por LaTeX se excluyen mediante
-[`.gitignore`](./.gitignore).
 
 ## Orden sugerido de lectura
 
@@ -135,4 +133,3 @@ Los archivos auxiliares generados por LaTeX se excluyen mediante
    capacidades y riesgos de la IA en medicina.
 2. [Informe Final](./Informe%20Final/Informe%20Final%20-%20Maria%20Delfina%20Kiss.pdf):
    corregibilidad, resistencia al apagado y propuesta experimental.
->>>>>>> 4f347d0 (read me y primer informe)
