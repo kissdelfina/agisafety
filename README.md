@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# agisafety
-TP Final - Fundamentos de AGI Safety
-=======
 # Fundamentos de AGI Safety
 
 Repositorio de trabajos prácticos de **Maria Delfina Kiss** para la materia
